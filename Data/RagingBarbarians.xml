@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameInfo>
+	<!-- <Tags> -->
+		<!-- <Row Tag="CLASS_BARB_KONGO" Vocabulary="ABILITY_CLASS" /> -->
+	<!-- </Tags> -->
+	<!-- <TypeTags> -->
+		<!-- <Row Type="UNIT_WARRIOR" Tag="CLASS_BARB_KONGO" /> -->
+		<!-- <Row Type="UNIT_KONGO_SHIELD_BEARER" Tag="CLASS_BARB_KONGO" /> -->
+		<!-- <Row Type="UNIT_KONGO_SHIELD_BEARER" Tag="CLASS_BARB_KONGO" /> -->
+	<!-- </TypeTags> -->
+	<BarbarianTribes>
+		<Row TribeType="TRIBE_KONGO" PercentRangedUnits="25" TurnsToWarriorSpawn="25" ScoutTag="CLASS_BARB_RECON" MeleeTag="CLASS_BARB_KONGO" RangedTag="CLASS_BARB_KONGO" SiegeTag="CLASS_BARB_SIEGE" DefenderTag="CLASS_BARB_KONGO" ScoutingBehaviorTree="Barbarian Found City" RaidingBehaviorTree="Barbarian Attack" RaidingBoldness="10" CityAttackOperation="Barbarian City Assault" CityAttackBoldness="25"/>
+		<!-- <Row TribeType="TRIBE_RUS" PercentRangedUnits="25" TurnsToWarriorSpawn="25" ScoutTag="CLASS_RECON" MeleeTag="CLASS_MELEE" RangedTag="CLASS_RANGED" SiegeTag="CLASS_SIEGE" DefenderTag="CLASS_ANTI_CAVALRY" ScoutingBehaviorTree="Barbarian Found City" RaidingBehaviorTree="Barbarian Attack" RaidingBoldness="10" CityAttackOperation="Barbarian City Assault" CityAttackBoldness="25"/> -->
+		<!-- <Row TribeType="TRIBE_OTTOMANS" PercentRangedUnits="25" TurnsToWarriorSpawn="25" ScoutTag="CLASS_RECON" MeleeTag="CLASS_JANISSARY" RangedTag="CLASS_RANGED" SiegeTag="CLASS_SIEGE" DefenderTag="CLASS_ANTI_CAVALRY" ScoutingBehaviorTree="Barbarian Found City" RaidingBehaviorTree="Barbarian Attack" RaidingBoldness="10" CityAttackOperation="Barbarian City Assault" CityAttackBoldness="25"/> -->
+		<!-- <Row TribeType="TRIBE_HORDE" PercentRangedUnits="25" TurnsToWarriorSpawn="25" ScoutTag="CLASS_RECON" MeleeTag="CLASS_LIGHT_CAVALRY" RangedTag="CLASS_RANGED_CAVALRY" SiegeTag="CLASS_SIEGE" DefenderTag="CLASS_ANTI_CAVALRY" ScoutingBehaviorTree="Barbarian Found City" RaidingBehaviorTree="Barbarian Attack" RaidingBoldness="10" CityAttackOperation="Barbarian City Assault" CityAttackBoldness="25"/> -->
+	</BarbarianTribes>
+	<BarbarianTribeNames>
+		<Row TribeNameType="BARBARIAN_KONGO_1" TribeType="TRIBE_KONGO" TribeDisplayName="LOC_BARBARIAN_KONGO_1"/>
+		<Row TribeNameType="BARBARIAN_KONGO_2" TribeType="TRIBE_KONGO" TribeDisplayName="LOC_BARBARIAN_KONGO_1"/>
+		<Row TribeNameType="BARBARIAN_KONGO_3" TribeType="TRIBE_KONGO" TribeDisplayName="LOC_BARBARIAN_KONGO_1"/>
+		<Row TribeNameType="BARBARIAN_KONGO_4" TribeType="TRIBE_KONGO" TribeDisplayName="LOC_BARBARIAN_KONGO_1"/>
+		<Row TribeNameType="BARBARIAN_KONGO_5" TribeType="TRIBE_KONGO" TribeDisplayName="LOC_BARBARIAN_KONGO_1"/>
+		<!-- <Row TribeNameType="BARBARIAN_RUS_1" TribeType="TRIBE_RUS" TribeDisplayName="LOC_BARBARIAN_RUS_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_RUS_2" TribeType="TRIBE_RUS" TribeDisplayName="LOC_BARBARIAN_RUS_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_RUS_3" TribeType="TRIBE_RUS" TribeDisplayName="LOC_BARBARIAN_RUS_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_RUS_4" TribeType="TRIBE_RUS" TribeDisplayName="LOC_BARBARIAN_RUS_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_RUS_5" TribeType="TRIBE_RUS" TribeDisplayName="LOC_BARBARIAN_RUS_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_OTTOMANS_1" TribeType="TRIBE_OTTOMANS" TribeDisplayName="LOC_BARBARIAN_OTTOMAN_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_OTTOMANS_2" TribeType="TRIBE_OTTOMANS" TribeDisplayName="LOC_BARBARIAN_OTTOMAN_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_OTTOMANS_3" TribeType="TRIBE_OTTOMANS" TribeDisplayName="LOC_BARBARIAN_OTTOMAN_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_OTTOMANS_4" TribeType="TRIBE_OTTOMANS" TribeDisplayName="LOC_BARBARIAN_OTTOMAN_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_OTTOMANS_5" TribeType="TRIBE_OTTOMANS" TribeDisplayName="LOC_BARBARIAN_OTTOMAN_1"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_HORDE_1" TribeType="TRIBE_HORDE" TribeDisplayName="LOC_BARBARIAN_CAVALRY_2"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_HORDE_2" TribeType="TRIBE_HORDE" TribeDisplayName="LOC_BARBARIAN_CAVALRY_2"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_HORDE_3" TribeType="TRIBE_HORDE" TribeDisplayName="LOC_BARBARIAN_CAVALRY_2"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_HORDE_4" TribeType="TRIBE_HORDE" TribeDisplayName="LOC_BARBARIAN_CAVALRY_2"/> -->
+		<!-- <Row TribeNameType="BARBARIAN_HORDE_5" TribeType="TRIBE_HORDE" TribeDisplayName="LOC_BARBARIAN_CAVALRY_2"/> -->
+	</BarbarianTribeNames>
+	<BarbarianAttackForces>
+		<Row AttackForceType="LowDifficultyKongoRaid" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_BARB_KONGO" NumMeleeUnits="2" RangeTag="CLASS_BARB_KONGO" NumRangeUnits="1" RaidingForce="true"/>
+		<Row AttackForceType="KongoRaid" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_BARB_KONGO" NumMeleeUnits="3" RangeTag="CLASS_BARB_KONGO" NumRangeUnits="2" RaidingForce="true"/>
+		<Row AttackForceType="HighDifficultyKongoRaid" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_BARB_KONGO" NumMeleeUnits="4" RangeTag="CLASS_BARB_KONGO" NumRangeUnits="3" RaidingForce="true"/>
+		<Row AttackForceType="LowDifficultyKongoAttack" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_BARB_KONGO" NumMeleeUnits="3" RangeTag="CLASS_BARB_KONGO" NumRangeUnits="2" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1"/>
+		<Row AttackForceType="KongoAttack" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_HEAVY_CAVALRY" NumMeleeUnits="4" RangeTag="CLASS_RANGED" NumRangeUnits="3" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/>
+		<Row AttackForceType="HighDifficultyKongoAttack" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_HEAVY_CAVALRY" NumMeleeUnits="5" RangeTag="CLASS_RANGED" NumRangeUnits="4" SiegeTag="CLASS_SIEGE" NumSiegeUnits="2" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/>
+		<!-- <Row AttackForceType="LowDifficultyRusRaid" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_MELEE" NumMeleeUnits="2" RangeTag="CLASS_RANGED" NumRangeUnits="1" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="RusRaid" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_MELEE" NumMeleeUnits="3" RangeTag="CLASS_RANGED" NumRangeUnits="2" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="HighDifficultyRusRaid" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_MELEE" NumMeleeUnits="4" RangeTag="CLASS_RANGED" NumRangeUnits="3" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="LowDifficultyRusAttack" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_MELEE" NumMeleeUnits="3" RangeTag="CLASS_RANGED" NumRangeUnits="2" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1"/> -->
+		<!-- <Row AttackForceType="RusAttack" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_MELEE" NumMeleeUnits="4" RangeTag="CLASS_RANGED" NumRangeUnits="3" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+		<!-- <Row AttackForceType="HighDifficultyRusAttack" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_MELEE" NumMeleeUnits="5" RangeTag="CLASS_RANGED" NumRangeUnits="4" SiegeTag="CLASS_SIEGE" NumSiegeUnits="2" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+		<!-- <Row AttackForceType="LowDifficultyOttomanRaid" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="2" RangeTag="CLASS_RANGED" NumRangeUnits="1" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="OttomanRaid" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="3" RangeTag="CLASS_RANGED" NumRangeUnits="2" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="HighDifficultyOttomanRaid" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="4" RangeTag="CLASS_RANGED" NumRangeUnits="3" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="LowDifficultyOttomanAttack" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="3" RangeTag="CLASS_RANGED" NumRangeUnits="2" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1"/> -->
+		<!-- <Row AttackForceType="OttomanAttack" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="4" RangeTag="CLASS_RANGED" NumRangeUnits="3" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+		<!-- <Row AttackForceType="HighDifficultyOttomanAttack" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_JANISSARY" NumMeleeUnits="5" RangeTag="CLASS_RANGED" NumRangeUnits="4" SiegeTag="CLASS_SIEGE" NumSiegeUnits="2" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+		<!-- <Row AttackForceType="LowDifficultyHorseRaid" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="2" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="1" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="HorseRaid" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="3" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="2" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="HighDifficultyHorsesRaid" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="4" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="3" RaidingForce="true"/> -->
+		<!-- <Row AttackForceType="LowDifficultyHorseAttack" MaxTargetDifficulty="DIFFICULTY_CHIEFTAIN" SpawnRate="2" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="3" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="2" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1"/> -->
+		<!-- <Row AttackForceType="HorseAttack" MinTargetDifficulty="DIFFICULTY_WARLORD" MaxTargetDifficulty="DIFFICULTY_EMPEROR" SpawnRate="2" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="4" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="3" SiegeTag="CLASS_SIEGE" NumSiegeUnits="1" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+		<!-- <Row AttackForceType="HighDifficultyHorseAttack" MinTargetDifficulty="DIFFICULTY_IMMORTAL" SpawnRate="1" MeleeTag="CLASS_LIGHT_CAVALRY" NumMeleeUnits="5" RangeTag="CLASS_RANGED_CAVALRY" NumRangeUnits="4" SiegeTag="CLASS_SIEGE" NumSiegeUnits="2" SupportTag="CLASS_BATTERING_RAM" NumSupportUnits="1"/> -->
+	</BarbarianAttackForces>
+	<BarbarianTribeForces>
+		<Row AttackForceType="LowDifficultyKongoRaid" TribeType="TRIBE_KONGO"/>
+		<Row AttackForceType="KongoRaid" TribeType="TRIBE_KONGO"/>
+		<Row AttackForceType="HighDifficultyKongoRaid" TribeType="TRIBE_KONGO"/>
+		<Row AttackForceType="LowDifficultyKongoAttack" TribeType="TRIBE_KONGO"/>
+		<Row AttackForceType="KongoAttack" TribeType="TRIBE_KONGO"/>
+		<Row AttackForceType="HighDifficultyKongoAttack" TribeType="TRIBE_KONGO"/>
+		<!-- <Row AttackForceType="LowDifficultyRusRaid" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="RusRaid" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="HighDifficultyRusRaid" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="LowDifficultyRusAttack" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="RusAttack" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="HighDifficultyRusAttack" TribeType="TRIBE_RUS"/> -->
+		<!-- <Row AttackForceType="LowDifficultyOttomanRaid" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="OttomanRaid" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="HighDifficultyOttomanRaid" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="LowDifficultyOttomanAttack" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="OttomanAttack" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="HighDifficultyOttomanAttack" TribeType="TRIBE_OTTOMANS"/> -->
+		<!-- <Row AttackForceType="LowDifficultyHorseRaid" TribeType="TRIBE_HORDE"/> -->
+		<!-- <Row AttackForceType="HorseRaid" TribeType="TRIBE_HORDE"/> -->
+		<!-- <Row AttackForceType="HighDifficultyHorsesRaid" TribeType="TRIBE_HORDE"/> -->
+		<!-- <Row AttackForceType="LowDifficultyHorseAttack" TribeType="TRIBE_HORDE"/> -->
+		<!-- <Row AttackForceType="HorseAttack" TribeType="TRIBE_HORDE"/> -->
+		<!-- <Row AttackForceType="HighDifficultyHorseAttack" TribeType="TRIBE_HORDE"/> -->
+	</BarbarianTribeForces>
+</GameInfo>

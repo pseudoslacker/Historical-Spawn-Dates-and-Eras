@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GameInfo>
+	<Parameters>		
+		<Row ParameterId="HistoricalSpawnDates" Name="LOC_MAP_HISTORICAL_SPAWN_NAME" Description="LOC_MAP_HISTORICAL_SPAWN_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" GroupId="AdvancedOptions" Visible="1" SortIndex="300"/>
+		<Row ParameterId="BalanceHSD" Name="LOC_MAP_BALANCE_HSD" Description="LOC_MAP_BALANCE_HSD_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" GroupId="AdvancedOptions" Visible="1" SortIndex="301"/>	
+		<Row ParameterId="FlipZones" Name="LOC_MAP_FLIP_ZONES" Description="LOC_MAP_FLIP_ZONES_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="FlipZones" GroupId="AdvancedOptions" Visible="1" SortIndex="301"/>
+		<Row ParameterId="HistoricalSpawnEras" Name="LOC_MAP_HISTORICAL_SPAWN_ERA_NAME" Description="LOC_MAP_HISTORICAL_SPAWN_ERA_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnEras" GroupId="AdvancedOptions" Visible="1" SortIndex="303"/>
+		<Row ParameterId="LiteMode" Name="LOC_MAP_LITE_MODE_NAME" Description="LOC_MAP_LITE_MODE_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="LiteMode" GroupId="AdvancedOptions" Visible="1" SortIndex="304"/>
+		<Row ParameterId="GrantGPP" Name="LOC_MAP_GRANT_GPP" Description="LOC_MAP_GRANT_GPP_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="GrantGPP" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>
+		<Row ParameterId="SpawnUUs" Name="LOC_MAP_UNIQUE_UNITS" Description="LOC_MAP_UNIQUE_UNITS_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="SpawnUUs" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>			
+		<Row ParameterId="TechCivicBoost" Name="LOC_MAP_HSD_BOOST" Description="LOC_MAP_HSD_BOOST_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="TechCivicBoost" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>	
+		<Row ParameterId="EraBuildingForAll" Name="LOC_MAP_ERA_BUILDING" Description="LOC_MAP_ERA_BUILDING_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="EraBuildingForAll" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>	
+		<Row ParameterId="RagingBarbarians" Name="LOC_MAP_RAGING_BARBARIANS" Description="LOC_MAP_RAGING_BARBARIANS_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="RagingBarbarians" GroupId="AdvancedOptions" Visible="0" SortIndex="306"/>
+		<Row ParameterId="Comandantes" Name="LOC_MAP_COMANDANTES_INDUSTRIAL_ERA" Description="LOC_MAP_COMANDANTES_INDUSTRIAL_ERA_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="Comandantes" GroupId="AdvancedOptions" Visible="1" SortIndex="306"/>
+		<Row ParameterId="PlayerColonies" Name="LOC_MAP_COLONIZATION_PLAYER" Description="LOC_MAP_COLONIZATION_PLAYER_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="PlayerColonies" GroupId="AdvancedOptions" Visible="1" SortIndex="307"/>	
+		<Row ParameterId="LoyalHarbors" Name="LOC_MAP_LOYAL_HARBORS" Description="LOC_MAP_LOYAL_HARBORS_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="LoyalHarbors" GroupId="AdvancedOptions" Visible="1" SortIndex="307"/>
+		<Row ParameterId="ConvertCities" Name="LOC_MAP_CONVERT_CITIES" Description="LOC_MAP_CONVERT_CITIES_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="ConvertCities" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>
+		<Row ParameterId="ConvertSpawnZones" Name="LOC_MAP_CONVERT_SPAWN_ZONES" Description="LOC_MAP_CONVERT_SPAWN_ZONES_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="ConvertSpawnZones" GroupId="AdvancedOptions" Visible="0" SortIndex="305"/>
+		<Row ParameterId="SpawnRange" Name="LOC_MAP_SPAWN_RANGE" Description="LOC_MAP_SPAWN_RANGE_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="SpawnRange" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>
+		<Row ParameterId="SpawnAge" Name="LOC_MAP_SPAWN_AGE" Description="LOC_MAP_SPAWN_AGE_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="SpawnAge" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>	
+		<Row ParameterId="SubtractEra" Name="LOC_MAP_LESSER_ERA" Description="LOC_MAP_LESSER_ERA_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="SubtractEra" GroupId="AdvancedOptions" Visible="1" SortIndex="305"/>
+		<Row ParameterId="Colonization" Name="LOC_MAP_COLONIZATION" Description="LOC_MAP_COLONIZATION_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="Colonization" GroupId="AdvancedOptions" Visible="1" SortIndex="307"/>
+		<Row ParameterId="LoyalHarbors" Name="LOC_MAP_LOYAL_HARBORS" Description="LOC_MAP_LOYAL_HARBORS_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="LoyalHarbors" GroupId="AdvancedOptions" Visible="1" SortIndex="307"/>
+		<Row ParameterId="SpawnDateTables" Name="LOC_MAP_SPAWN_DATE_TABLES_NAME" Description="" Domain="SpawnDateTables" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="SpawnDateTables" GroupId="AdvancedOptions" Visible="1" SortIndex="308"/>
+		<Row ParameterId="SpawnRangeSlider" Name="LOC_MAP_SPAWN_RANGE_SLIDER" Description="LOC_MAP_SPAWN_RANGE_SLIDER_DESC" Domain="SpawnRangeSlider" DefaultValue="10" ConfigurationGroup="Map" ConfigurationId="SpawnRangeSlider" GroupId="AdvancedOptions" Visible="1" SortIndex="309"/>
+		<!-- Legacy Support for Old Saves (set to hidden) -->
+		<Row ParameterId="OldWorldStart" Name="LOC_MAP_OLD_WORLD_START" Description="" Domain="OldWorldStart" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="OldWorldStart" GroupId="AdvancedOptions" Visible="0" SortIndex="310"/>
+	</Parameters>
+	<Parameters>
+		<!-- Headers and Footers -->
+		<Row ParameterId="HSD_Header_Main" Name="LOC_MAP_HSD_HEADER_MAIN_NAME" Description="" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="HSD_Header_Main" GroupId="AdvancedOptions" Visible="1" ReadOnly="1" SortIndex="299"/>
+		<Row ParameterId="HSD_Footer_Main" Name="LOC_MAP_HSD_FOOTER_MAIN_NAME" Description="" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="HSD_Footer_Main" GroupId="AdvancedOptions" Visible="1" ReadOnly="1" SortIndex="311"/>
+	</Parameters>
+	<DomainValues>
+		<!-- Legacy Support for Old Saves -->
+		<Replace Domain="OldWorldStart" Value="0" 	Name="LOC_OLD_WORLD_START" 	Description="LOC_OLD_WORLD_START_DESC" 	SortIndex="10"/>
+		<Replace Domain="OldWorldStart" Value="1" 	Name="LOC_NEW_WORLD_START" 	Description="LOC_NEW_WORLD_START_DESC" 	SortIndex="20"/>
+		<!-- New Spawn Tables -->
+		<Replace Domain="SpawnDateTables" Value="0" 	Name="LOC_HSD_STANDARD_NAME" 	Description="LOC_HSD_STANDARD_DESC" 	SortIndex="10"/>
+		<Replace Domain="SpawnDateTables" Value="1" 	Name="LOC_HSD_TRUE_START_NAME" 	Description="LOC_HSD_TRUE_START_DESC" 	SortIndex="20"/>
+	</DomainValues>	
+	<DomainRanges>
+		<Replace Domain="SpawnRangeSlider" 	MinimumValue="2" MaximumValue="20" />
+	</DomainRanges>
+	<ParameterDependencies>	
+		<Row ParameterId="ForceTSL" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="NotEquals" ConfigurationValue="1"/>
+		<Row ParameterId="BalanceHSD" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="GrantGPP" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="GrantGPP" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="TechCivicBoost" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="TechCivicBoost" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="EraBuildingForAll" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="HistoricalSpawnEras" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="Colonization" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="PlayerColonies" ConfigurationGroup="Map" ConfigurationId="Colonization" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="LoyalHarbors" ConfigurationGroup="Map" ConfigurationId="Colonization" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnUUs" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnUUs" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="FlipZones" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="FlipZones" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnRange" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnRange" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnAge" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnAge" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SubtractEra" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SubtractEra" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnRangeSlider" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="SpawnRangeSlider" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="ConvertCities" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="ConvertCities" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="ConvertCities" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="Comandantes" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="Comandantes" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
+		<!-- New Spawn Tables -->
+		<Row ParameterId="SpawnDateTables" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="LiteMode" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<!-- Legacy Support for Old Saves -->
+		<Row ParameterId="OldWorldStart" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="OldWorldStart" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnEras" Operator="NotEquals" ConfigurationValue="1"/>
+	</ParameterDependencies>	
+</GameInfo>
