@@ -843,23 +843,48 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 	end
 	if currentEra == 5 then
 		--Modern Era
-		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_INFANTRY", pPlot:GetX(), pPlot:GetY())
-		return true 
+		if bSpawnUniqueUnits then
+			if CivilizationTypeName == "CIVILIZATION_AUSTRALIA" then
+				CreateUnitWithExp("UNIT_DIGGER", 3, pPlayerUnits, pPlot)
+				return true
+			else
+				CreateUnitWithExp("UNIT_INFANTRY", 3, pPlayerUnits, pPlot)
+				return true 
+			end
+		else
+			CreateUnitWithExp("UNIT_INFANTRY", 3, pPlayerUnits, pPlot)
+			return true 		
+		end
 	end
 	if currentEra == 6 then
 		--Atomic Era
-		CreateUnitWithExp("UNIT_INFANTRY", 3, pPlayerUnits, pPlot)
-		return true 
+		if bSpawnUniqueUnits then
+			if CivilizationTypeName == "CIVILIZATION_AUSTRALIA" then
+				CreateUnitWithExp("UNIT_DIGGER", 6, pPlayerUnits, pPlot)
+				return true
+			else
+				CreateUnitWithExp("UNIT_INFANTRY", 6, pPlayerUnits, pPlot)
+				return true 
+			end
+		else
+			CreateUnitWithExp("UNIT_INFANTRY", 6, pPlayerUnits, pPlot)
+			return true 		
+		end
 	end
 	if currentEra == 7 then
 		--Information Era
-		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MECHANIZED_INFANTRY", pPlot:GetX(), pPlot:GetY())
+		CreateUnitWithExp("UNIT_MECHANIZED_INFANTRY", 3, pPlayerUnits, pPlot)
 		return true 	
 	end
 	if currentEra == 8 then
 		--Future Era
-		CreateUnitWithExp("UNIT_MECHANIZED_INFANTRY", 3, pPlayerUnits, pPlot)
-		return true 	
+		if bGatheringStormActive then
+			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_GIANT_DEATH_ROBOT", pPlot:GetX(), pPlot:GetY())
+			return true
+		else
+			CreateUnitWithExp("UNIT_MECHANIZED_INFANTRY", 6, pPlayerUnits, pPlot)
+			return true 
+		end	
 	end
 end
 
