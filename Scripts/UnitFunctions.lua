@@ -821,10 +821,10 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		--Industrial Era
 		if bSpawnUniqueUnits then
 			if CivilizationTypeName == "CIVILIZATION_FRANCE" then
-				UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_FRENCH_GARDE_IMPERIALE", pPlot:GetX(), pPlot:GetY())
+				CreateUnitWithExp("UNIT_FRENCH_GARDE_IMPERIALE", 1, pPlayerUnits, pPlot)
 				return true
 			elseif(CivilizationTypeName == "CIVILIZATION_ENGLAND") then
-				UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_ENGLISH_REDCOAT", pPlot:GetX(), pPlot:GetY())
+				CreateUnitWithExp("UNIT_ENGLISH_REDCOAT", 1, pPlayerUnits, pPlot)
 				return true 
 			elseif(CivilizationTypeName == "CIVILIZATION_OTTOMAN") then
 				CreateUnitWithExp("UNIT_SULEIMAN_JANISSARY", 3, pPlayerUnits, pPlot)

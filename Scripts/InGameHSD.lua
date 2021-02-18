@@ -55,15 +55,17 @@ LuaEvents.SetStartingEra.Add( SetStartingEra )
 function CheckCityGovernor(pPlayerID, pCityID)
 	local pPlayer = Players[pPlayerID]
 	local pCity = pPlayer:GetCities():FindID(pCityID)
-	if not pCity then
-		return false
-	end
 	local pGovernor = pCity:GetAssignedGovernor()
-	local bCapital = pCity:IsOriginalCapital()
-	if (pGovernor == nil or not pGovernor:IsEstablished()) and not bCapital then
+	local bCapital = CheckCityCapital(pPlayerID, pCityID)
+	if pCity and (pGovernor == nil or not pGovernor:IsEstablished()) and not bCapital then
 		print ("CheckCityGovernor returning city ID")
 		local pFreeCityID = pCity:GetID()
-		return pFreeCityID
+		if pFreeCityID then
+			return pFreeCityID
+		else
+			print("CheckCityGovernor could not return a city ID")
+			return false
+		end
 	else
 		print ("CheckCityGovernor could not return a city ID")
 		return false
@@ -72,6 +74,7 @@ end
 ExposedMembers.CheckCity.CheckCityGovernor = CheckCityGovernor
 
 function CheckCityCapital(pPlayerID, pCityID)
+	local bCapital = false
 	local pPlayer = Players[pPlayerID]
 	local pCity = pPlayer:GetCities():FindID(pCityID)
 	if pPlayer and pCity then
@@ -81,18 +84,16 @@ function CheckCityCapital(pPlayerID, pCityID)
 				print("Found original capital")
 				bCapital = true
 			else
-				local pOriginalOwner = pCity:GetOriginalOwner()
 				print("Found occupied capital")
 				bCapital = false
 			end
 		elseif pCity:IsOriginalCapital() and (pCity:GetOriginalOwner() ~= pCity:GetOwner()) then
-			local pOriginalOwner = pCity:GetOriginalOwner()
 			print("Found occupied capital")
 			bCapital = false			
 		elseif pCity:IsCapital() then
 			-- New capital
 			print("Found new capital")
-			bCapital = true
+			bCapital = false
 		else
 			-- Other cities
 			print("Found non-capital city")

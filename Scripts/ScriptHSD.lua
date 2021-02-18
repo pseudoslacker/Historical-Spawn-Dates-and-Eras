@@ -80,6 +80,7 @@ local bRagingBarbarians			= MapConfiguration.GetValue("RagingBarbarians") or fal
 local bConvertCities			= MapConfiguration.GetValue("ConvertCities") or false 
 -- local bConvertSpawnZone			= MapConfiguration.GetValue("ConvertSpawnZones") or false
 local bConvertSpawnZone			= false
+local bOverrideSpawn			= false
 
 print("bHistoricalSpawnDates is "..tostring(bHistoricalSpawnDates))
 print("bHistoricalSpawnEras is "..tostring(bHistoricalSpawnEras))
@@ -1303,10 +1304,14 @@ end
 function OnPlayerEraChanged(PlayerID, iNewEraID)
 	-- print("Era Changed for Player # " .. PlayerID )
 	local pPlayer = Players[PlayerID]
-	local colonyPlot = false
+	local iCitiesOwnedByPlayer :number = pPlayer:GetCities():GetCount()
+	if iCitiesOwnedByPlayer <= 0 then
+		return false
+	end
 	if pPlayer:IsHuman() and not bPlayerColonies then
 		return false
 	end
+	local colonyPlot = false
 	local sCivTypeName = PlayerConfigurations[PlayerID]:GetCivilizationTypeName()
 	-- local sLeaderTypeName = PlayerConfigurations[PlayerID]:GetLeaderTypeName()
 	-- local sCivTextName = Locale.Lookup(GameInfo.Civilizations[sCivTypeName].Name)
@@ -1377,13 +1382,17 @@ function CityRebellion(pCity, playerID, otherPlayerID)
 		local pCityID = pCity:GetID()
 		-- print("pCityID = "..tostring(pCityID))
 		local pFreeCityID = -1
-		if bConvertCities and bConvertSpawnZone then
+		if bOverrideSpawn then
+			print("bOverrideSpawn is "..tostring(bOverrideSpawn)..". Converting any city")
+			pFreeCityID = pCityID
+		elseif bConvertCities then
 			local bCapital = ExposedMembers.CheckCityCapital(otherPlayerID, pCityID)
 			if not bCapital and not (Players[otherPlayerID]:GetCities():GetCount() <= 1) then
 				print("Detected non-capital city to convert in spawn zone")
 				pFreeCityID = pCityID
 			end
 		else
+			print("Checking city for governor or original capital")
 			pFreeCityID = ExposedMembers.CheckCity.CheckCityGovernor(otherPlayerID, pCityID)
 		end
 		if pCityID == pFreeCityID then
@@ -1516,9 +1525,9 @@ function FreeCitiesRevoltArea(playerID, startingPlot)
 		for j, pCityPlot in ipairs(revoltCityPlots) do
 			local pCity = Cities.GetCityInPlot(pCityPlot)
 			if pCity then
-				local pCityOwner = Players[pCity:GetOwner()]
-				if pCityOwner then
-					bRevolt = CityRebellion(pCity, playerID, pCityOwner)
+				local pCityOwnerID = pCity:GetOwner()
+				if pCityOwnerID then
+					bRevolt = CityRebellion(pCity, playerID, pCityOwnerID)
 				end
 			end
 		end
@@ -1527,6 +1536,7 @@ function FreeCitiesRevoltArea(playerID, startingPlot)
 end
 
 function DirectCityConversion(iPlayer, pPlot)
+	local bConvertedCity = false
 	local pPlayer = Players[iPlayer]
 	if pPlayer and pPlayer:IsMajor() and pPlot and pPlot:IsCity() then
 		local pCity = Cities.GetCityInPlot(pPlot)
@@ -1540,12 +1550,10 @@ function DirectCityConversion(iPlayer, pPlot)
 			if bCanWar then 
 				pDiplomacy:DeclareWarOn(pCityOwnerID, iWar, true) 
 			end	
-			return true		
-		else
-			return false
+			bConvertedCity = true	
 		end
 	end	
-	return false
+	return bConvertedCity
 end
 
 function ConvertInnerRingToCity(iPlayer, startingPlot)
@@ -1685,6 +1693,13 @@ function SpawnMajorPlayer(iPlayer, startingPlot, newStartingPlot)
 		else
 			local errorString :string = "Failed to convert city to new player"
 			local errorMessage = Notification_FailedSpawn(iPlayer, startingPlot, errorString)
+			newStartingPlot = PlayerBuffer(startingPlot)
+			local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
+			if plotUnits and #plotUnits > 0 then
+				MoveStartingPlotUnits(plotUnits, newStartingPlot)
+			end
+			print("New starting plot found: "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY()))
+			EraSiegeUnits(iPlayer, newStartingPlot, gameCurrentEra, settlersBonus)
 		end
 	elseif bConvertCities and startingPlot:IsOwned() and not bOwnerIsPlayer and (iOtherPlayerCities > 1) then
 		print("bConvertCities is true")
@@ -1703,6 +1718,13 @@ function SpawnMajorPlayer(iPlayer, startingPlot, newStartingPlot)
 		else
 			local errorString :string = "No city found for this plot!"
 			local errorMessage = Notification_FailedSpawn(iPlayer, startingPlot, errorString)
+			newStartingPlot = PlayerBuffer(startingPlot)
+			local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
+			if plotUnits and #plotUnits > 0 then
+				MoveStartingPlotUnits(plotUnits, newStartingPlot)
+			end
+			print("New starting plot found: "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY()))
+			EraSiegeUnits(iPlayer, newStartingPlot, gameCurrentEra, settlersBonus)
 		end
 	elseif(startingPlot:IsOwned() and not bOwnerIsPlayer) then
 		print("Starting plot is owned. Searching for new starting plot.")
@@ -1757,6 +1779,13 @@ function SpawnIsolatedPlayer(iPlayer, startingPlot, isolatedSpawn, CivilizationT
 		else
 			local errorString :string = "Failed to convert city to new player"
 			local errorMessage = Notification_FailedSpawn(iPlayer, startingPlot, errorString)
+			newStartingPlot = PlayerBuffer(startingPlot)
+			local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
+			if plotUnits and #plotUnits > 0 then
+				MoveStartingPlotUnits(plotUnits, newStartingPlot)
+			end
+			print("New starting plot found: "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY()))
+			IsolatedPlayerSeige(iPlayer, newStartingPlot, isolatedSpawn, CivilizationTypeName)
 		end
 	elseif bConvertCities and startingPlot:IsOwned() and not bOwnerIsPlayer and (iOtherPlayerCities > 1) then
 		print("bConvertCities is true")
@@ -1771,15 +1800,28 @@ function SpawnIsolatedPlayer(iPlayer, startingPlot, isolatedSpawn, CivilizationT
 			else
 				local errorString :string = "Failed to convert city to new player"
 				local errorMessage = Notification_FailedSpawn(iPlayer, cityPlot, errorString)
+				newStartingPlot = PlayerBuffer(startingPlot)
+				local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
+				if plotUnits and #plotUnits > 0 then
+					MoveStartingPlotUnits(plotUnits, newStartingPlot)
+				end
+				print("New starting plot found: "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY()))
+				IsolatedPlayerSeige(iPlayer, newStartingPlot, isolatedSpawn, CivilizationTypeName)
 			end								
 		else
 			local errorString :string = "No city found for this plot!"
 			local errorMessage = Notification_FailedSpawn(iPlayer, startingPlot, errorString)
+			newStartingPlot = PlayerBuffer(startingPlot)
+			local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
+			if plotUnits and #plotUnits > 0 then
+				MoveStartingPlotUnits(plotUnits, newStartingPlot)
+			end
+			print("New starting plot found: "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY()))
+			IsolatedPlayerSeige(iPlayer, newStartingPlot, isolatedSpawn, CivilizationTypeName)
 		end
 	elseif(startingPlot:IsOwned() and not bOwnerIsPlayer) then
 		print("Starting plot is owned. Searching for new starting plot.")
 		newStartingPlot = PlayerBuffer(startingPlot)
-		-- newStartingPlot = FindClosestStartingPlotByContinent(startingPlot)
 		local plotUnits = Units.GetUnitsInPlot(newStartingPlot)
 		if plotUnits and #plotUnits > 0 then
 			MoveStartingPlotUnits(plotUnits, newStartingPlot)
@@ -1833,10 +1875,6 @@ function SpawnStartingCity(iPlayer, startingPlot)
 						-- Major players spawn their city here
 						-- ImprovementBuilder.SetImprovementType(startingPlot, -1) --Not necessary 
 						local city = player:GetCities():Create(startingPlot:GetX(), startingPlot:GetY())
-						if city then
-							-- totalslacker: Uncomment to convert inner ring to new city (not fully tested)
-							-- ConvertInnerRingToCity(iPlayer, startingPlot)
-						end
 						if not city then
 							print("Failed to spawn starting city. Spawning settler instead.")
 							UnitManager.InitUnit(iPlayer, "UNIT_SETTLER", startingPlot:GetX(), startingPlot:GetY())
