@@ -841,8 +841,6 @@ function SetPlayerCityUIDatas( iPlayer )
 					local iSomeNumber = 0 --I dont know which value to use and probably it does not matter
 					pCity:GetReligion():AddReligiousPressure(iSomeNumber, iReligionType , iPressure)
 				end
-			else
-				print("Warning: City not found")
 			end			
 		end		
 	end
@@ -986,7 +984,9 @@ function FindClosestCityToPlotXY(iStartX, iStartY)
 			end
 		end
 	end
-	if (pCity) then
+	if pCity then
+		print ("FindClosestCityToPlotXY() found a target city");
+	else
 		print ("FindClosestCityToPlotXY() found no target city");
 	end
     return pCity;
@@ -1887,10 +1887,11 @@ function SpawnStartingCity(iPlayer, startingPlot)
 					-- print("iShortestDistance is "..tostring(iShortestDistance))
 					if iShortestDistance == 3 then
 						local pCityInRange = FindClosestCityToPlotXY(startingPlot:GetX(), startingPlot:GetY())
+						-- local pCityInRange = false
 						if pCityInRange then
 							local pCityPlot = Map.GetPlotXY(pCityInRange:GetX(), pCityInRange:GetY())
 							-- print("pCityPlot AreaID is "..tostring(pCityPlot:GetAreaID())..". startingPlot AreaID is "..tostring(startingPlot:GetAreaID()))
-							if pCityPlot then
+							if pCityPlot and not player:IsHuman() then
 								local city = player:GetCities():Create(startingPlot:GetX(), startingPlot:GetY())
 								if (player:GetCities():GetCount() < 1) then
 									print("Failed to spawn starting city. Spawning settler instead.")
@@ -2546,6 +2547,7 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 		print("OnCityInitialized detected a null city")
 		return
 	elseif(not city and pCity) then
+		print("City not detected by ID. Reverting to city in plot")
 		city = pCity
 	end
 	
@@ -2553,8 +2555,9 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 	local pCapital = player:GetCities():GetCapitalCity()
 	local iLoyaltyBuilding = GameInfo.Buildings["BUILDING_SUPER_MONUMENT"].Index	
 	local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
+	local CityName = city:GetName()
 	print("------------")
-	print("Initializing new city for " .. tostring(CivilizationTypeName))
+	print("Initializing new city for " .. tostring(CivilizationTypeName) ..", "..Locale.Lookup(CityName))
 	local bOriginalOwner = false
 	if city:GetOriginalOwner() ~= nil then
 		bOriginalOwner = true
@@ -2647,7 +2650,7 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 	print("StartingPopulationCapital = "..tostring(kEraBonuses.StartingPopulationCapital))
 	print("StartingPopulationOtherCities = "..tostring(kEraBonuses.StartingPopulationOtherCities))
 	
-	if kEraBonuses.StartingPopulationCapital and city == player:GetCities():GetCapitalCity() then 
+	if kEraBonuses.StartingPopulationCapital and (city == player:GetCities():GetCapitalCity()) then 
 		if iDifficulty < 5 then
 			if not (cityOriginalPopulation >= kEraBonuses.StartingPopulationCapital) then
 				SetCityPopulation(city, kEraBonuses.StartingPopulationCapital)
@@ -2671,8 +2674,6 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 			SetCityPopulation(city, cityOriginalPopulation + kEraBonuses.StartingPopulationOtherCities)
 			print("Changing starting population for other city...")
 		end
-		ConvertInnerRingToCity(iPlayer, cityPlot)
-		print("Converting inner ring of plots to new city")
 	end
 	
 	for kBuildings in GameInfo.StartingBuildings() do
