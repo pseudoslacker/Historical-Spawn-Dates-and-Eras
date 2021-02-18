@@ -156,6 +156,7 @@ function GetPlayerCityUIDatas(pPlayerID, pCityID)
 			CityDistricts = {},
 			CityBuildings = {},
 			CityReligions = {},
+			-- CityPlotImprovements = {},
 		}		
 		--General City Datas:
 		kCityUIDatas.iPosX = pCity:GetX()
@@ -168,9 +169,16 @@ function GetPlayerCityUIDatas(pPlayerID, pCityID)
 			local pPlot:table = Map.GetPlotByIndex(plotID)
 			local kCoordinates:table = {
 				iX = pPlot:GetX(), 
-				iY = pPlot:GetY() 
+				iY = pPlot:GetY(),
+				plotID = pPlot:GetIndex(),
+				plotImprovementIndex = pPlot:GetImprovementType()
 			}
 			table.insert(kCityUIDatas.CityPlotCoordinates, kCoordinates)
+			-- local kImprovement:table = {
+				-- plotID = plotID,
+				-- plotImprovement = pPlot:GetImprovementType()
+			-- }
+			-- table.insert(kCityUIDatas.CityPlotImprovements, kImprovement)
 		end
 		--City District Datas:
 		local pCityDistricts :table	= pCity:GetDistricts()			

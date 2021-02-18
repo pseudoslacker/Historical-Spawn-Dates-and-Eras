@@ -793,11 +793,18 @@ function SetPlayerCityUIDatas( iPlayer )
 				--Set City Tiles:
 				if (bInheritCityPlots == true) then
 					for _,kCoordinates in pairs(kCityUIDatas.CityPlotCoordinates) do
+						local pPlot = Map.GetPlotByIndex(kCoordinates.plotID)
 						if CityManager then
 							if iPlayer ~= -1 then
 								if pCity then
 									CityManager():SetPlotOwner(kCoordinates.iX, kCoordinates.iY, false )
 									CityManager():SetPlotOwner(kCoordinates.iX, kCoordinates.iY, iPlayer, pCity:GetID())
+									local plotImprovementIndex = kCoordinates.plotImprovementIndex
+									if plotImprovementIndex and GameInfo.Improvements[plotImprovementIndex] then
+										ImprovementBuilder.SetImprovementType(pPlot, -1) 
+										ImprovementBuilder.SetImprovementType(pPlot, plotImprovementIndex, iPlayer)
+										print("Set a "..Locale.Lookup(GameInfo.Improvements[plotImprovementIndex].ImprovementType).." in converted city plot "..tostring(pPlot:GetIndex()))
+									end
 								end
 							else
 								CityManager():SetPlotOwner(kCoordinates.iX, kCoordinates.iY, false )
@@ -882,7 +889,12 @@ end
 -- Used when converting nearby cities to free cities
 function FindClosestCityByEra(playerID :number, iStartX :number, iStartY :number)
     local pCity = false
-    local iShortestDistance = ((4 * (gameCurrentEra + 1)) / 2)
+	local iShortestDistance = 0
+	if gameCurrentEra < 4 then
+		iShortestDistance = ((4 * (gameCurrentEra + 1)) / 2)
+	else
+		iShortestDistance = 6
+	end
 	local pPlayer = Players[playerID]
 	local pFreeCities = Players[62]
 	if pPlayer:GetCities() and (pPlayer:GetCities():GetCount() > 1) and (pPlayer ~= pFreeCities) then
@@ -1403,9 +1415,9 @@ function CityRebellion(pCity, playerID, otherPlayerID)
 						local convertedCity = DirectCityConversion(playerID, freeCityPlot)
 						if convertedCity then
 							table.insert(Notifications_revoltingCityPlots, freeCityPlot)
-							print("----------")
-							print("Converting city to new player")
-							print("----------")
+							-- print("----------")
+							-- print("Converting city to new player")
+							-- print("----------")
 							bRevolt = true
 						end
 					else
@@ -1476,10 +1488,14 @@ function FreeCityRevolt(playerID, startingPlot)
 		local aPlayers = PlayerManager.GetAlive();
 		for loop, pPlayer in ipairs(aPlayers) do
 			local iPlayer = pPlayer:GetID()
-			-- print("The nearest city per player will revolt")
-			local pCity = FindClosestCityByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
-			if pCity then
-				bRevolt = CityRebellion(pCity, playerID, iPlayer)
+			if iPlayer == playerID then
+				-- print("Don't convert your own cities!")
+			else
+				-- print("The nearest city per player will revolt")
+				local pCity = FindClosestCityByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
+				if pCity then
+					bRevolt = CityRebellion(pCity, playerID, iPlayer)
+				end
 			end
 		end
 	else
@@ -2096,7 +2112,8 @@ function SpawnPlayer(iPlayer)
 				local eraSpawnCheck = Game:GetProperty(playerID .. "EraSpawn" .. spawnEra)
 				if not eraSpawnCheck then
 					Game:SetProperty(playerID .. "EraSpawn" .. spawnEra, 1)
-					print("Setting eraSpawnCheck for player has spawned")
+					-- print ("----------")
+					-- print("Setting eraSpawnCheck for player has spawned")
 					local startingPlot = player:GetStartingPlot()
 					local newStartingPlot = false
 					local cityPlot = false
