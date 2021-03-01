@@ -879,6 +879,7 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 	if currentEra == 8 then
 		--Future Era
 		if bGatheringStormActive then
+			--GDR does not earn experience
 			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_GIANT_DEATH_ROBOT", pPlot:GetX(), pPlot:GetY())
 			return true
 		else

@@ -48,13 +48,17 @@ bSpawnUniqueUnits				= MapConfiguration.GetValue("SpawnUUs")	--Global Variable
 -- Game Configuration Values 
 -- ===========================================================================
 
-GameSpeedMultiplier       = GameInfo.GameSpeeds[GameConfiguration.GetGameSpeedType()].CostMultiplier
+GameSpeedMultiplier = GameInfo.GameSpeeds[GameConfiguration.GetGameSpeedType()].CostMultiplier
 print("Game speed multiplier is "..tostring(GameSpeedMultiplier))
-iDifficulty 				= GameInfo.Difficulties[PlayerConfigurations[0]:GetHandicapTypeID()].Index
-print("Difficulty setting is "..tostring(iDifficulty))
-print("Difficulty setting is "..Locale.Lookup(GameInfo.Difficulties[iDifficulty].Name))
-bDramaticAges				= GameConfiguration.GetValue("GAMEMODE_DRAMATICAGES")
+iDifficulty = GameInfo.Difficulties[PlayerConfigurations[0]:GetHandicapTypeID()].Index
+print("Difficulty setting is "..tostring(iDifficulty).." = "..Locale.Lookup(GameInfo.Difficulties[iDifficulty].Name))
+bDramaticAges = GameConfiguration.GetValue("GAMEMODE_DRAMATICAGES")
 print("Dramatic Ages is "..tostring(bDramaticAges))
+
+--This is the maximum possible number of player slots, minus one, for the zero index. DO NOT CHANGE THIS VALUE
+--Player ID is zero indexed, so the player (in player slot 1 in the setup menu) is #0, next is #1, etc
+iMaxPlayersZeroIndex = 63 
+print("iMaxPlayersZeroIndex is "..tostring(iMaxPlayersZeroIndex))
 
 -- ===========================================================================
 -- Map Configuration Values
@@ -107,6 +111,7 @@ print("bConvertSpawnZone is "..tostring(bConvertSpawnZone))
 local iTestingRandoms = Game.GetRandNum(2, "Random Continent Roll")
 print("iTestingRandoms is "..tostring(iTestingRandoms))
 
+--New players will receive bonus settlers after this era
 local iSettlerEra :number = 0
 print("iSettlerEra is "..tostring(iSettlerEra))
 
@@ -309,11 +314,26 @@ end
 
 -- Create list of civilizations
 local isInGame = {}
-for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+for iPlayer = 0, iMaxPlayersZeroIndex do
 	local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 	local LeaderTypeName = PlayerConfigurations[iPlayer]:GetLeaderTypeName()
-	if CivilizationTypeName then isInGame[CivilizationTypeName] = true end
-	if LeaderTypeName 		then isInGame[LeaderTypeName] 		= true end
+	local slotStatus = PlayerConfigurations[iPlayer]:GetSlotStatus()
+	local reservePlayer = Game:GetProperty("ReservePlayer"..iPlayer)
+	local originalPlayer = Game:GetProperty("OriginalPlayer"..iPlayer)
+	if not ((slotStatus == 2) or (slotStatus == 5) or (slotStatus == nil)) and not reservePlayer then
+		if CivilizationTypeName then isInGame[CivilizationTypeName] = true end
+		if LeaderTypeName 		then isInGame[LeaderTypeName] 		= true end
+		--Save the original player property at the beginning of the game but don't overwrite it later
+		if not orginalPlayer then
+			Game:SetProperty("OriginalPlayer"..iPlayer, 1)
+		end
+	else
+		--Save the reserve player property at the beginning of the game but don't overwrite it later
+		if not reservePlayer and not orginalPlayer then 
+			Game:SetProperty("ReservePlayer"..iPlayer, 1)
+			print("Reserving player slot for an uninitialized player")
+		end
+	end
 end
 
 print("Building spawn year table...")
@@ -401,9 +421,10 @@ elseif(iSpawnDateTables == 1) then
 		end
 	end
 	print("Checking for missing start dates")
-	for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+	for iPlayer = 0, iMaxPlayersZeroIndex do
 		local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
-		if CivilizationTypeName and not spawnDates[CivilizationTypeName] then
+		local reservePlayer = Game:GetProperty("ReservePlayer"..iPlayer)
+		if CivilizationTypeName and not spawnDates[CivilizationTypeName] and not reservePlayer then
 			print("Detected missing start date. Referring to Standard Timeline")
 			print("CivilizationTypeName is "..tostring(CivilizationTypeName).." and spawnDates[CivilizationTypeName] is "..tostring(spawnDates[CivilizationTypeName]))
 			local bMissingSpawnDate = true
@@ -482,9 +503,10 @@ else
 		end
 	end
 	print("Checking for missing start eras")
-	for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+	for iPlayer = 0, iMaxPlayersZeroIndex do
 		local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
-		if CivilizationTypeName and not spawnEras[CivilizationTypeName] then
+		local reservePlayer = Game:GetProperty("ReservePlayer"..iPlayer)
+		if CivilizationTypeName and not spawnEras[CivilizationTypeName] and not reservePlayer then
 			print("Detected missing start era. Referring to Standard Timeline")
 			print("CivilizationTypeName is "..tostring(CivilizationTypeName).." and spawnEras[CivilizationTypeName] is "..tostring(spawnEras[CivilizationTypeName]))
 			local bMissingSpawnEra = true
@@ -630,94 +652,102 @@ function InitializeHSD()
 	SetCurrentGameEra()
 	-- totalslacker: set bonuses when loading a save
 	SetCurrentBonuses()
-	for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+	for iPlayer = 0, 63 do
+		local playerConfig = PlayerConfigurations[iPlayer]
+		local slotStatus = playerConfig:GetSlotStatus()
 		local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 		local LeaderTypeName = PlayerConfigurations[iPlayer]:GetLeaderTypeName()
-		if not CivilizationTypeName then return end
-		local player = Players[iPlayer]
-		local spawnEra 	= spawnEras[LeaderTypeName] or spawnEras[CivilizationTypeName] or defaultStartEra
-		local spawnYear = spawnDates[LeaderTypeName] or spawnDates[CivilizationTypeName] or defaultStartYear
-		if bHistoricalSpawnEras then
-			if spawnEras[LeaderTypeName] then
-				print("---------")
-				print("Check "..tostring(LeaderTypeName)..", spawn era  = ".. tostring(spawnEra))		
-			elseif(spawnEras[CivilizationTypeName]) then
-				print("---------")
-				print("Check "..tostring(CivilizationTypeName)..", spawn era  = ".. tostring(spawnEra))		
+		print ("CivilizationTypeName is " .. tostring(CivilizationTypeName))	
+		print ("LeaderTypeName is " .. tostring(LeaderTypeName))
+		print ("slotStatus is "..tostring(slotStatus))
+		if CivilizationTypeName and not (iPlayer == 62) and not (iPlayer == 63) and not ((slotStatus == 2) or (slotStatus == 5) or (slotStatus == nil)) then
+			local player = Players[iPlayer]
+			local spawnEra 	= spawnEras[LeaderTypeName] or spawnEras[CivilizationTypeName] or defaultStartEra
+			local spawnYear = spawnDates[LeaderTypeName] or spawnDates[CivilizationTypeName] or defaultStartYear
+			if bHistoricalSpawnEras then
+				if spawnEras[LeaderTypeName] then
+					print("---------")
+					print("Check "..tostring(LeaderTypeName)..", spawn era  = ".. tostring(spawnEra))		
+				elseif(spawnEras[CivilizationTypeName]) then
+					print("---------")
+					print("Check "..tostring(CivilizationTypeName)..", spawn era  = ".. tostring(spawnEra))		
+				end
+			else
+				if spawnDates[LeaderTypeName] then
+					print("---------")
+					print("Check "..tostring(LeaderTypeName)..", spawn year  = ".. tostring(spawnYear))
+				elseif(spawnDates[CivilizationTypeName]) then
+					print("---------")
+					print("Check "..tostring(CivilizationTypeName)..", spawn year  = ".. tostring(spawnYear))
+				end
 			end
-		else
-			if spawnDates[LeaderTypeName] then
-				print("---------")
-				print("Check "..tostring(LeaderTypeName)..", spawn year  = ".. tostring(spawnYear))
-			elseif(spawnDates[CivilizationTypeName]) then
-				print("---------")
-				print("Check "..tostring(CivilizationTypeName)..", spawn year  = ".. tostring(spawnYear))
-			end
+			if bHistoricalSpawnEras and spawnEra and spawnEra > gameCurrentEra then
+				if player:IsMajor() then
+					print("Spawning settler off map")
+					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					local playerUnits = player:GetUnits()
+					local toKill = {}
+					for i, unit in playerUnits:Members() do
+						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
+							table.insert(toKill, unit)
+						end				
+					end
+					for i, unit in ipairs(toKill) do
+						playerUnits:Destroy(unit)
+						-- print("Deleting unit for player spawn...")
+					end	
+					if player:IsHuman() then
+						LuaEvents.SetAutoValues()
+					end
+				end			
+				-- totalslacker: spawn city states according to historical spawn dates
+				if not player:IsMajor() then
+					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					local playerUnits = player:GetUnits()
+					local toKill = {}
+					for i, unit in playerUnits:Members() do
+						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
+							table.insert(toKill, unit)
+						end				
+					end
+					for i, unit in ipairs(toKill) do
+						playerUnits:Destroy(unit)
+					end				
+				end			
+			elseif(not bHistoricalSpawnEras and spawnYear and spawnYear > currentTurnYear) then
+				if player:IsMajor() then
+					print("Spawning settler off map")
+					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					local playerUnits = player:GetUnits()
+					local toKill = {}
+					for i, unit in playerUnits:Members() do
+						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
+							table.insert(toKill, unit)
+						end				
+					end
+					for i, unit in ipairs(toKill) do
+						playerUnits:Destroy(unit)
+					end	
+					if player:IsHuman() then
+						LuaEvents.SetAutoValues()
+					end
+				end			
+				-- totalslacker: spawn city states according to historical spawn dates
+				if not player:IsMajor() then
+					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					local playerUnits = player:GetUnits()
+					local toKill = {}
+					for i, unit in playerUnits:Members() do
+						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
+							table.insert(toKill, unit)
+						end				
+					end
+					for i, unit in ipairs(toKill) do
+						playerUnits:Destroy(unit)
+					end				
+				end	
+			end			
 		end
-		if bHistoricalSpawnEras and spawnEra and spawnEra > gameCurrentEra then
-			if player:IsMajor() then
-				UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-				local playerUnits = player:GetUnits()
-				local toKill = {}
-				for i, unit in playerUnits:Members() do
-					if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-						table.insert(toKill, unit)
-					end				
-				end
-				for i, unit in ipairs(toKill) do
-					playerUnits:Destroy(unit)
-					-- print("Deleting unit for player spawn...")
-				end	
-				if player:IsHuman() then
-					LuaEvents.SetAutoValues()
-				end
-			end			
-			-- totalslacker: spawn city states according to historical spawn dates
-			if not player:IsMajor() then
-				UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-				local playerUnits = player:GetUnits()
-				local toKill = {}
-				for i, unit in playerUnits:Members() do
-					if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-						table.insert(toKill, unit)
-					end				
-				end
-				for i, unit in ipairs(toKill) do
-					playerUnits:Destroy(unit)
-				end				
-			end			
-		elseif(not bHistoricalSpawnEras and spawnYear and spawnYear > currentTurnYear) then
-			if player:IsMajor() then
-				UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-				local playerUnits = player:GetUnits()
-				local toKill = {}
-				for i, unit in playerUnits:Members() do
-					if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-						table.insert(toKill, unit)
-					end				
-				end
-				for i, unit in ipairs(toKill) do
-					playerUnits:Destroy(unit)
-				end	
-				if player:IsHuman() then
-					LuaEvents.SetAutoValues()
-				end
-			end			
-			-- totalslacker: spawn city states according to historical spawn dates
-			if not player:IsMajor() then
-				UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-				local playerUnits = player:GetUnits()
-				local toKill = {}
-				for i, unit in playerUnits:Members() do
-					if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-						table.insert(toKill, unit)
-					end				
-				end
-				for i, unit in ipairs(toKill) do
-					playerUnits:Destroy(unit)
-				end				
-			end	
-		end			
 	end
 end
 LuaEvents.InitializeHSD.Add(InitializeHSD)
@@ -1314,14 +1344,15 @@ end
 
 -- Used in Colonization mode (main functions are in ScenarioFunctions.lua)
 function OnPlayerEraChanged(PlayerID, iNewEraID)
-	-- print("Era Changed for Player # " .. PlayerID )
+	print("Era Changed for Player # " .. PlayerID )
 	local pPlayer = Players[PlayerID]
 	local iCitiesOwnedByPlayer :number = pPlayer:GetCities():GetCount()
-	if iCitiesOwnedByPlayer <= 0 then
-		return false
+	print("iCitiesOwnedByPlayer is "..tostring(iCitiesOwnedByPlayer))
+	if iCitiesOwnedByPlayer and iCitiesOwnedByPlayer < 1 then
+		return
 	end
 	if pPlayer:IsHuman() and not bPlayerColonies then
-		return false
+		return
 	end
 	local colonyPlot = false
 	local sCivTypeName = PlayerConfigurations[PlayerID]:GetCivilizationTypeName()
@@ -1334,7 +1365,7 @@ function OnPlayerEraChanged(PlayerID, iNewEraID)
 	if (tEraGameInfo ~= nil) then
 		local sEraTypeName = tEraGameInfo.EraType
 		local sEraTextName = Locale.Lookup(tEraGameInfo.Name)
-		-- print("The Player's new Era ID# (" .. iNewEraID .. ") matches to the " .. sEraTextName .. " Era (" .. sEraTypeName)
+		print("The Player's new Era ID# (" .. iNewEraID .. ") matches to the " .. sEraTextName .. " Era (" .. sEraTypeName)
 	else
 		print("The GameInfo for " .. iNewEraID .. " retrieved a nil value: this should not be possible")
 	end
@@ -2376,7 +2407,7 @@ function SetCurrentBonuses()
 		end
 	end	
 	
-	for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+	for iPlayer = 0, iMaxPlayersZeroIndex do
 		local player = Players[iPlayer]
 		if player and player:IsMajor() and player:GetCities():GetCount() > 0 then
 			local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
@@ -2744,9 +2775,8 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 end
 
 -- test capture or creation (these functions are no longer being used)
--- totalslacker: The capture test will only work the first time a city is conquered...
+-- totalslacker: The capture test will only work the first time a city is conquered
 --	It checks the Player ID at the time the city center is removed and compares to original owner ID
---	TODO: Better solution?
 local cityCaptureTest = {}
 function CityCaptureDistrictRemoved(iPlayer, districtID, cityID, iX, iY)
 	local key = iX..","..iY
