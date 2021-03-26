@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Mod id="684731c5-4837-427d-9378-0c58e1201325" version="1.2.0">
+<Mod id="684731c5-4837-427d-9378-0c58e1201325" version="1.2.3">
 	<Properties>
 		<Name>LOC_HISTORICAL_SPAWN_DATES_TITLE</Name>
 		<Teaser>LOC_HISTORICAL_SPAWN_DATES_TEASER</Teaser>
@@ -111,7 +111,6 @@
 				<LoadOrder>100</LoadOrder>
            	</Properties>
 			<File>Data/GamePlay.sql</File>
-			<!-- <File>Data/HistoricalSpawnDates.sql</File> -->
 			<File>Data/IsolatedCivs.sql</File>
 			<File>Data/ModSupport.sql</File>
 			<File>Tables/HSD_Eras.sql</File>
@@ -166,7 +165,6 @@
 	</FrontEndActions>
 	<Files>
 		<File>Data/Tables.sql</File>
-		<!-- <File>Data/HistoricalSpawnDates.sql</File> -->
 		<File>Data/ModSupport.sql</File>
 		<File>Data/IsolatedCivs.sql</File>
 		<File>Data/LoyalHarbors.sql</File>

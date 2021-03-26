@@ -617,6 +617,102 @@ function InitiateColonization_FirstWave(PlayerID, sCivTypeName)
 				end	
 			end
 		end
+	elseif(sCivTypeName == "CIVILIZATION_PORTUGAL") then
+		local tContinents = Map.GetContinentsInUse()
+		for i,iContinent in ipairs(tContinents) do
+			if (GameInfo.Continents[iContinent].ContinentType == "CONTINENT_AFRICA") then
+				print("Portugal is founding a new colony in Africa...")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				--Select possible colony plots
+				colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+				--Find the best plot in the selection
+				selectedPlot = InitiateColonization_BestColonyPlot(colonyPlots)
+				--Create colony on selected plot
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end				
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (Portugal gets extra Naus)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
+						end
+					end
+				end			
+			elseif(GameInfo.Continents[iContinent].ContinentType == "CONTINENT_ASIA") then
+				print("Portugal is founding a new colony in Asia")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				colonyPlots = InitiateColonization_GetIslandPlots(coastalPlots)
+				selectedPlot = InitiateColonization_BestColonyPlot(colonyPlots)
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (Portugal gets extra Naus)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
+						end
+					end	
+				end			
+			elseif(GameInfo.Continents[iContinent].ContinentType == "CONTINENT_SOUTH_AMERICA") then
+				print("Portugal is founding a new colony in South America...")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				--Select possible colony plots
+				colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+				--Find the best plot in the selection
+				selectedPlot = InitiateColonization_BestColonyByDistance(colonyPlots, startingPlot)
+				--Create colony on selected plot
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end				
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (we're using a break statement)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
+							break
+						end
+					end
+				end
+			end
+		end
 	elseif(sCivTypeName == "CIVILIZATION_SCOTLAND") then
 		local tContinents = Map.GetContinentsInUse()
 		for i,iContinent in ipairs(tContinents) do
@@ -697,6 +793,40 @@ function InitiateColonization_FirstWave(PlayerID, sCivTypeName)
 					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
 					print("Spawning Spanish colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
 				end							
+			elseif(GameInfo.Continents[iContinent].ContinentType == "CONTINENT_ASIA") then
+				print("Spain is founding a new colony in Asia...")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				if GameInfo.Features["FEATURE_CHOCOLATEHILLS"] then
+					colonyPlots = InitiateColonization_GetPlotsByFeature(coastalPlots, GameInfo.Features["FEATURE_CHOCOLATEHILLS"].Index)
+				else
+					colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+				end
+				selectedPlot = InitiateColonization_BestColonyMostDistant(colonyPlots, startingPlot)
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end
+					UnitManager.InitUnit(PlayerID, "UNIT_SPANISH_CONQUISTADOR", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_SPANISH_CONQUISTADOR", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Spanish colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (we're using a break statement)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_CARAVEL", adjacentPlot:GetX(), adjacentPlot:GetY())
+							break
+						end
+					end
+				end	
 			end
 		end
 	else
@@ -979,6 +1109,96 @@ function InitiateColonization_SecondWave(PlayerID, sCivTypeName)
 						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
 						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
 							UnitManager.InitUnit(PlayerID, "UNIT_DE_ZEVEN_PROVINCIEN", adjacentPlot:GetX(), adjacentPlot:GetY())
+							break
+						end
+					end	
+				end			
+			end
+		end
+	elseif(sCivTypeName == "CIVILIZATION_PORTUGAL") then
+		local tContinents = Map.GetContinentsInUse()
+		for i,iContinent in ipairs(tContinents) do
+			if (GameInfo.Continents[iContinent].ContinentType == "CONTINENT_AFRICA") then
+				print("Portugal is founding a new colony in Africa...")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+				selectedPlot = InitiateColonization_BestColonyPlot(colonyPlots)
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (Portugal gets extra Naus)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
+						end
+					end	
+				end			
+			elseif(GameInfo.Continents[iContinent].ContinentType == "CONTINENT_ASIA") then
+				print("Portugal is founding a new colony in Asia")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				colonyPlots = InitiateColonization_GetIslandPlots(coastalPlots)
+				selectedPlot = InitiateColonization_BestColonyPlot(colonyPlots)
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (Portugal gets extra Naus)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
+						end
+					end	
+				end			
+			elseif(GameInfo.Continents[iContinent].ContinentType == "CONTINENT_SOUTH_AMERICA") then
+				print("Portugal is founding a new colony in South America")
+				local colonyPlots = {}
+				local sortedPlots = {}	
+				local selectedPlot = false	
+				local plotScore = -100
+				local coastalPlots = Map.GetContinentPlots(iContinent)
+				colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+				selectedPlot = InitiateColonization_BestColonyByDistance(colonyPlots, startingPlot)
+				if selectedPlot then
+					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())
+					if pCity then
+						local bHarbor = InitiateColonization_BuildHarborInColony(selectedPlot, pCity, sCivTypeName)
+					else
+						print("Failed to spawn city. Spawning settler instead.")
+						UnitManager.InitUnit(PlayerID, "UNIT_SETTLER", selectedPlot:GetX(), selectedPlot:GetY())
+					end
+					UnitManager.InitUnitValidAdjacentHex(PlayerID, "UNIT_BUILDER", selectedPlot:GetX(), selectedPlot:GetY())
+					UnitManager.InitUnit(PlayerID, "UNIT_RANGER", selectedPlot:GetX(), selectedPlot:GetY())
+					print("Spawning Portuguese colonizer units at plot "..tostring(selectedPlot:GetX())..", "..tostring(selectedPlot:GetY()))
+					--Spawn water units last (we're using a break statement)
+					for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+						local adjacentPlot = Map.GetAdjacentPlot(selectedPlot:GetX(), selectedPlot:GetY(), direction)
+						if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+							UnitManager.InitUnit(PlayerID, "UNIT_PORTUGUESE_NAU", adjacentPlot:GetX(), adjacentPlot:GetY())
 							break
 						end
 					end	

@@ -103,6 +103,7 @@ print("bGoldenAgeSpawn is "..tostring(bGoldenAgeSpawn))
 print("bSubtractEra is "..tostring(bSubtractEra))
 print("bConvertCities is "..tostring(bConvertCities))
 print("bConvertSpawnZone is "..tostring(bConvertSpawnZone))
+print("bOverrideSpawn is "..tostring(bOverrideSpawn))
 
 -- ===========================================================================
 -- Other Game Settings
@@ -1446,9 +1447,11 @@ function CityRebellion(pCity, playerID, otherPlayerID)
 						local convertedCity = DirectCityConversion(playerID, freeCityPlot)
 						if convertedCity then
 							table.insert(Notifications_revoltingCityPlots, freeCityPlot)
-							-- print("----------")
-							-- print("Converting city to new player")
-							-- print("----------")
+							print("----------")
+							print("Converting city to new player")
+							print("----------")
+							ConvertCitiesUnits(playerID, freeCityPlot, gameCurrentEra)
+							print("Spawning more player units at city")
 							bRevolt = true
 						end
 					else
@@ -1661,7 +1664,7 @@ function ConvertInnerRingToCity(iPlayer, startingPlot)
 							if CityManager then
 								CityManager():SetPlotOwner(adjacentPlot:GetX(), adjacentPlot:GetY(), false )
 								CityManager():SetPlotOwner(adjacentPlot:GetX(), adjacentPlot:GetY(), iPlayer, pCity:GetID())	
-								print("Converting inner ring plot to new city")	
+								print("Converting outer ring plot to new city")	
 							end	
 						end
 					end
@@ -2268,7 +2271,7 @@ function GetStartingBonuses(player)
 		playerGoldBonus = playerGoldBonus + kEraBonuses.Gold
 	end
 	print(" - Gold bonus = "..tostring(playerGoldBonus))
-	pTreasury:ChangeGoldBalance(playerGoldBonus)	
+	pTreasury:ChangeGoldBalance(playerGoldBonus)
 	
 	-- science
 	local pScience = player:GetTechs()	
@@ -2329,8 +2332,26 @@ function GetStartingBonuses(player)
 	player:GetReligion():ChangeFaithBalance(playerFaithBonus)
 	
 	-- token
+	if gameCurrentEra > 0 then
+		tokenBonus = tokenBonus + gameCurrentEra
+	end
 	print(" - Token bonus = "..tostring(tokenBonus))
 	player:GetInfluence():ChangeTokensToGive(tokenBonus)
+	
+	-- Difficulty adjustment
+	if iDifficulty > 4 then
+		local iBonusDifficulty = iDifficulty - 4
+		if iBonusDifficulty > 0 then
+			for j = 1, iBonusDifficulty, 1 do
+				player:GetReligion():ChangeFaithBalance(playerFaithBonus)
+				print(" - Faith bonus from difficulty = "..tostring(playerFaithBonus))
+				pTreasury:ChangeGoldBalance(playerGoldBonus)
+				print(" - Gold bonus from difficulty = "..tostring(playerGoldBonus))
+			end
+			player:GetInfluence():ChangeTokensToGive(iBonusDifficulty)
+			print(" - Token bonus from difficulty = "..tostring(iBonusDifficulty))
+		end
+	end
 	
 	-- Great Person Points
 	if bGrantGPP and gameCurrentEra > 0 then 
@@ -2483,9 +2504,6 @@ function SetCurrentBonuses()
 		tokenBonus 		= Round(totalToken/playersWithCity)
 		faithBonus		= Round(totalFaith * (gameCurrentEra+1) * 25/100)
 	end
-	
-end
-if bApplyBalance then
 	
 end
 

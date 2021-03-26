@@ -319,6 +319,101 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	return false
 end
 
+--Units that spawn in converted cities
+function ConvertCitiesUnits(iPlayer, pPlot, currentGameEra)
+	local player = Players[iPlayer]
+	local startingPlot = player:GetStartingPlot()
+	local currentEra = currentGameEra
+	
+	if bSubtractEra then
+		currentEra = currentEra - 1
+	end
+	if currentEra == -1 then
+		--Ancient Era (Lesser Era mode)
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_WARRIOR", pPlot:GetX(), pPlot:GetY())
+		return true 
+	end	
+	if currentEra == 0 then
+		--Ancient Era
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end
+	if currentEra == 1 then
+		--Classical Era
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end		
+	if currentEra == 2 then
+		--Medieval Era
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end		
+	if currentEra == 3 then
+		--Renaissance
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end
+	if currentEra == 4 then
+		--Industrial
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end
+	if currentEra == 5 then
+		--Modern
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		return true 
+	end
+	if currentEra == 6 then
+		--Atomic
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_TANK", pPlot:GetX(), pPlot:GetY())	
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_TANK", pPlot:GetX(), pPlot:GetY())	
+		return true 
+	end		
+	if currentEra == 7 then
+		--Information
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_ANTIAIR_GUN", pPlot:GetX(), pPlot:GetY())	
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MODERN_ARMOR", pPlot:GetX(), pPlot:GetY())	
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MODERN_ARMOR", pPlot:GetX(), pPlot:GetY())			
+		return true 
+	end
+	if currentEra == 8 then
+		--Future
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MOBILE_SAM", pPlot:GetX(), pPlot:GetY())
+		return true 
+	end
+	return false
+end
+
 -- Used to spawn any extra units specific to a civilization (there could be any amount of logic used here, 
 -- currently gives a starting unique unit to isolated civilizations)
 function UnitSpawns(iPlayer, startingPlot, isolatedSpawn, CivilizationTypeName)
