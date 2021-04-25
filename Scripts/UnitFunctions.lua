@@ -194,11 +194,16 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 		end
 		SpawnUnit_AntiCav(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Siege(iPlayer, pPlot, currentEra)
 		SpawnUnit_Recon(iPlayer, reconPlot, currentEra)
+		if iDifficulty > 3 then
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
+		if iDifficulty > 5 then
+			SpawnUnit_Siege(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end		
 	if currentEra == 2 then
@@ -207,14 +212,22 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 20)
 			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 20)		
 		end
-		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_BOMBARD", pPlot:GetX(), pPlot:GetY())
-		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		SpawnUnit_Siege(iPlayer, pPlot, currentEra)
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_AntiCav(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Recon(iPlayer, reconPlot, currentEra)
+		if iDifficulty > 3 then
+			SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
+		if iDifficulty > 4 then
+			SpawnUnit_Siege(iPlayer, pPlot, currentEra)
+		end
+		if iDifficulty > 5 then
+			SpawnUnit_Siege(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end		
 	if currentEra == 3 then
@@ -224,13 +237,21 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 20)		
 		end
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
-		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_AntiCav(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Siege(iPlayer, pPlot, currentEra)
 		SpawnUnit_Recon(iPlayer, reconPlot, currentEra)
+		if iDifficulty > 3 then
+			SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
+		if iDifficulty > 4 then
+			SpawnUnit_Siege(iPlayer, pPlot, currentEra)
+		end
+		if iDifficulty > 5 then
+			SpawnUnit_Siege(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end
 	if currentEra == 4 then
@@ -324,7 +345,10 @@ function ConvertCitiesUnits(iPlayer, pPlot, currentGameEra)
 	local player = Players[iPlayer]
 	local startingPlot = player:GetStartingPlot()
 	local currentEra = currentGameEra
-	
+	if iDifficulty <= 3 then
+		print("Do not spawn extra units in converted city for difficulty less than King")
+		return false
+	end
 	if bSubtractEra then
 		currentEra = currentEra - 1
 	end
@@ -336,51 +360,63 @@ function ConvertCitiesUnits(iPlayer, pPlot, currentGameEra)
 	if currentEra == 0 then
 		--Ancient Era
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
-		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end
 	if currentEra == 1 then
 		--Classical Era
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end		
 	if currentEra == 2 then
 		--Medieval Era
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end		
 	if currentEra == 3 then
 		--Renaissance
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
-		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end
 	if currentEra == 4 then
 		--Industrial
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
-		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
-		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+			SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end
 	if currentEra == 5 then
 		--Modern
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
-		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
-		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+		if iDifficulty > 4 then
+			SpawnUnit_Melee(iPlayer, pPlot, currentEra)
+			SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
+		end
 		return true 
 	end
 	if currentEra == 6 then
@@ -390,7 +426,9 @@ function ConvertCitiesUnits(iPlayer, pPlot, currentGameEra)
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_TANK", pPlot:GetX(), pPlot:GetY())	
-		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_TANK", pPlot:GetX(), pPlot:GetY())	
+		if iDifficulty > 4 then
+			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_TANK", pPlot:GetX(), pPlot:GetY())	
+		end
 		return true 
 	end		
 	if currentEra == 7 then
@@ -401,7 +439,9 @@ function ConvertCitiesUnits(iPlayer, pPlot, currentGameEra)
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_ANTIAIR_GUN", pPlot:GetX(), pPlot:GetY())	
 		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MODERN_ARMOR", pPlot:GetX(), pPlot:GetY())	
-		UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MODERN_ARMOR", pPlot:GetX(), pPlot:GetY())			
+		if iDifficulty > 4 then
+			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_MODERN_ARMOR", pPlot:GetX(), pPlot:GetY())	
+		end		
 		return true 
 	end
 	if currentEra == 8 then
@@ -799,7 +839,6 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_WARRIOR", pPlot:GetX(), pPlot:GetY())
 			return true 		
 		end
-		return true 
 	end
 	if currentEra == 1 then
 		--Classical Era
@@ -859,7 +898,11 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 				CreateUnitWithExp("UNIT_MACEDONIAN_HYPASPIST", 3, pPlayerUnits, pPlot)
 				return true
 			elseif(CivilizationTypeName == "CIVILIZATION_MONGOLIA") then
-				CreateUnitWithExp("UNIT_HORSEMAN", 3, pPlayerUnits, pPlot)
+				if bGatheringStormActive then
+					CreateUnitWithExp("UNIT_COURSER", 1, pPlayerUnits, pPlot)
+				else
+					CreateUnitWithExp("UNIT_HORSEMAN", 3, pPlayerUnits, pPlot)
+				end
 				return true
 			elseif(CivilizationTypeName == "CIVILIZATION_NORWAY") then
 				CreateUnitWithExp("UNIT_NORWEGIAN_BERSERKER", 1, pPlayerUnits, pPlot)
@@ -871,17 +914,21 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 				CreateUnitWithExp("UNIT_ROMAN_LEGION", 3, pPlayerUnits, pPlot)
 				return true	
 			elseif(CivilizationTypeName == "CIVILIZATION_SCYTHIA") then
-				CreateUnitWithExp("UNIT_HORSEMAN", 3, pPlayerUnits, pPlot)
+				if bGatheringStormActive then
+					CreateUnitWithExp("UNIT_COURSER", 1, pPlayerUnits, pPlot)
+				else
+					CreateUnitWithExp("UNIT_HORSEMAN", 3, pPlayerUnits, pPlot)
+				end
 				return true
 			elseif(CivilizationTypeName == "CIVILIZATION_ZULU") then
 				UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_ZULU_IMPI", pPlot:GetX(), pPlot:GetY())
 				return true					
 			else
-				CreateUnitWithExp("UNIT_SWORDSMAN", 3, pPlayerUnits, pPlot)
+				CreateUnitWithExp("UNIT_MAN_AT_ARMS", 3, pPlayerUnits, pPlot)
 				return true 					
 			end
 		else
-			CreateUnitWithExp("UNIT_SWORDSMAN", 3, pPlayerUnits, pPlot)
+			CreateUnitWithExp("UNIT_MAN_AT_ARMS", 3, pPlayerUnits, pPlot)
 			return true 		
 		end
 	end
@@ -928,11 +975,11 @@ function SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 				CreateUnitWithExp("UNIT_ZULU_IMPI", 4, pPlayerUnits, pPlot)
 				return true	
 			else
-				CreateUnitWithExp("UNIT_MUSKETMAN", 3, pPlayerUnits, pPlot)
+				UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_LINE_INFANTRY", pPlot:GetX(), pPlot:GetY())
 				return true 
 			end
 		else
-			CreateUnitWithExp("UNIT_MUSKETMAN", 3, pPlayerUnits, pPlot)
+			UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_LINE_INFANTRY", pPlot:GetX(), pPlot:GetY())
 			return true 		
 		end
 	end
@@ -1269,11 +1316,11 @@ function SpawnUnit_Siege(iPlayer, pPlot, currentEra)
 				UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_KOREAN_HWACHA", pPlot:GetX(), pPlot:GetY())
 				return true									
 			else
-				CreateUnitWithExp("UNIT_CATAPULT", 6, pPlayerUnits, pPlot)
+				CreateUnitWithExp("UNIT_TREBUCHET", 1, pPlayerUnits, pPlot)
 				return true 					
 			end
 		else
-			CreateUnitWithExp("UNIT_CATAPULT", 6, pPlayerUnits, pPlot)
+			CreateUnitWithExp("UNIT_TREBUCHET", 1, pPlayerUnits, pPlot)
 			return true 		
 		end
 	end

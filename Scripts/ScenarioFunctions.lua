@@ -13,15 +13,17 @@
 
 g_CurrentBarbarianCamp = {}
 
-
 function SpawnUniqueBarbians(campPlot)
 	local bBarbarian = false
 	local isBarbarian = false
 	local isFreeCities = false
 	local iShortestDistance = 10000
 	local closestPlayerName = false
-	for iPlayer = 0, PlayerManager.GetWasEverAliveCount() - 1 do
+	for iPlayer = 0, 63 do
 		local pPlayer = Players[iPlayer]
+		if pPlayer and pPlayer:IsMajor() then
+			--unfinished
+		end
 		local sCivTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 		if pPlayer and pPlayer:IsBarbarian() then isBarbarian = true end
 		if iPlayer == 62 then isFreeCities = true end
@@ -36,11 +38,6 @@ function SpawnUniqueBarbians(campPlot)
 	end
 	if closestPlayerName then
 		bBarbarian = SpawnUniqueBarbarianTribe(closestPlayerName)
-		-- if closestPlayerName == "CIVILIZATION_KONGO" then
-			-- local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, iPlotIndex);
-			-- pBarbManager:CreateTribeUnits(iNovgorodTribeNumber, "CLASS_MELEE", 2, iPlotIndex, iRange);
-			-- pBarbManager:CreateTribeUnits(iNovgorodTribeNumber, "CLASS_RANGED", 1, iPlotIndex, iRange);
-		-- end
 	end
 	return bBarbarian
 end

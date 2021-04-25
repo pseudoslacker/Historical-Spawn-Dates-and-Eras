@@ -41,7 +41,6 @@ ExposedMembers.GetPlayerCityUIDatas = {}
 local bExpansion2				= GameConfiguration.GetValue("RULESET") == "RULESET_EXPANSION_2"
 print("bExpansion2 is "..tostring(bExpansion2))
 bGatheringStormActive			= false	--Global Variable
-
 bSpawnUniqueUnits				= MapConfiguration.GetValue("SpawnUUs")	--Global Variable
 
 -- ===========================================================================
@@ -49,7 +48,7 @@ bSpawnUniqueUnits				= MapConfiguration.GetValue("SpawnUUs")	--Global Variable
 -- ===========================================================================
 
 GameSpeedMultiplier = GameInfo.GameSpeeds[GameConfiguration.GetGameSpeedType()].CostMultiplier
-print("Game speed multiplier is "..tostring(GameSpeedMultiplier))
+print("Game speed multiplier is "..tostring(GameSpeedMultiplier).." = "..Locale.Lookup(GameInfo.GameSpeeds[GameConfiguration.GetGameSpeedType()].Name))
 iDifficulty = GameInfo.Difficulties[PlayerConfigurations[0]:GetHandicapTypeID()].Index
 print("Difficulty setting is "..tostring(iDifficulty).." = "..Locale.Lookup(GameInfo.Difficulties[iDifficulty].Name))
 bDramaticAges = GameConfiguration.GetValue("GAMEMODE_DRAMATICAGES")
@@ -109,8 +108,8 @@ print("bOverrideSpawn is "..tostring(bOverrideSpawn))
 -- Other Game Settings
 -- ===========================================================================
 
-local iTestingRandoms = Game.GetRandNum(2, "Random Continent Roll")
-print("iTestingRandoms is "..tostring(iTestingRandoms))
+-- local iTestingRandoms = Game.GetRandNum(2, "Random Continent Roll")
+-- print("iTestingRandoms is "..tostring(iTestingRandoms))
 
 --New players will receive bonus settlers after this era
 local iSettlerEra :number = 0
@@ -264,6 +263,36 @@ function ConvertYearToAnnoDomini(currentTurnYear :number)
 		calendarTurnString = tostring(currentTurnYear).."AD"
 	end
 	return calendarTurnString
+end
+
+function RemoveEraBuildings()
+	print("Calling RemoveEraBuildings() ...")
+	print("Multiple copies of Era Buildings will be deleted ...")
+	for iPlayer = 0, iMaxPlayersZeroIndex do
+		local player = Players[iPlayer]
+		if player and player:GetCities():GetCount() > 0 then
+			-- local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
+			-- print ("CivilizationTypeName is " .. tostring(CivilizationTypeName))
+			local playerCities = player:GetCities()
+			local buildingsToDestroy = {}
+			for i, city in ipairs(playerCities) do
+				for kEra in GameInfo.Eras() do
+					local EraBuilding = GameInfo.Buildings["BUILDING_CENTER_"..tostring(kEra.EraType)]
+					if EraBuilding and city:GetBuildings():HasBuilding(EraBuilding.Index) then
+						table.insert(buildingsToDestroy, EraBuilding.Index)
+					end
+				end
+				if #buildingsToDestroy > 1 then
+					for i, building in ipairs(buildingsToDestroy) do
+						if (i < #buildingsToDestroy) and city:GetBuildings():HasBuilding(building) then
+							city:GetBuildings():RemoveBuilding(building)
+							print("Deleting extra Era Building #"..tostring(i).." from city...")
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 -- ===========================================================================
@@ -653,11 +682,12 @@ function InitializeHSD()
 	SetCurrentGameEra()
 	-- totalslacker: set bonuses when loading a save
 	SetCurrentBonuses()
-	for iPlayer = 0, 63 do
+	for iPlayer = 0, iMaxPlayersZeroIndex do
 		local playerConfig = PlayerConfigurations[iPlayer]
 		local slotStatus = playerConfig:GetSlotStatus()
 		local CivilizationTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 		local LeaderTypeName = PlayerConfigurations[iPlayer]:GetLeaderTypeName()
+		print("---------")
 		print ("CivilizationTypeName is " .. tostring(CivilizationTypeName))	
 		print ("LeaderTypeName is " .. tostring(LeaderTypeName))
 		print ("slotStatus is "..tostring(slotStatus))
@@ -667,85 +697,86 @@ function InitializeHSD()
 			local spawnYear = spawnDates[LeaderTypeName] or spawnDates[CivilizationTypeName] or defaultStartYear
 			if bHistoricalSpawnEras then
 				if spawnEras[LeaderTypeName] then
-					print("---------")
 					print("Check "..tostring(LeaderTypeName)..", spawn era  = ".. tostring(spawnEra))		
 				elseif(spawnEras[CivilizationTypeName]) then
-					print("---------")
 					print("Check "..tostring(CivilizationTypeName)..", spawn era  = ".. tostring(spawnEra))		
 				end
 			else
 				if spawnDates[LeaderTypeName] then
-					print("---------")
 					print("Check "..tostring(LeaderTypeName)..", spawn year  = ".. tostring(spawnYear))
 				elseif(spawnDates[CivilizationTypeName]) then
-					print("---------")
 					print("Check "..tostring(CivilizationTypeName)..", spawn year  = ".. tostring(spawnYear))
 				end
 			end
 			if bHistoricalSpawnEras and spawnEra and spawnEra > gameCurrentEra then
-				if player:IsMajor() then
-					print("Spawning settler off map")
-					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+				if player then
 					local playerUnits = player:GetUnits()
 					local toKill = {}
+					local offmapUnits = {}
 					for i, unit in playerUnits:Members() do
 						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
 							table.insert(toKill, unit)
-						end				
+						else
+							table.insert(offmapUnits, unit)
+						end
 					end
-					for i, unit in ipairs(toKill) do
-						playerUnits:Destroy(unit)
-						-- print("Deleting unit for player spawn...")
-					end	
+					if #offmapUnits < 1 then
+						print("No settler detected off map. Spawning settler at (-1, -1) to keep the player alive until their spawn date...")
+						UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					elseif #offmapUnits > 1 then
+						print("There are "..tostring(#offmapUnits).." extra settlers off map. Deleting extra settlers...")
+						for i, unit in ipairs(offmapUnits) do
+							if i < #offmapUnits then
+								playerUnits:Destroy(unit)
+								print("Deleting extra off map unit #"..tostring(i).."...")
+							end
+						end	
+					end
+					if #toKill > 0 then
+						print("This player has units on the map before their spawn date. Deleting these units")
+						for i, unit in ipairs(toKill) do
+							playerUnits:Destroy(unit)
+							-- print("Deleting unit for player spawn...")
+						end	
+					end
 					if player:IsHuman() then
 						LuaEvents.SetAutoValues()
 					end
-				end			
-				-- totalslacker: spawn city states according to historical spawn dates
-				if not player:IsMajor() then
-					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-					local playerUnits = player:GetUnits()
-					local toKill = {}
-					for i, unit in playerUnits:Members() do
-						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-							table.insert(toKill, unit)
-						end				
-					end
-					for i, unit in ipairs(toKill) do
-						playerUnits:Destroy(unit)
-					end				
-				end			
+				end					
 			elseif(not bHistoricalSpawnEras and spawnYear and spawnYear > currentTurnYear) then
-				if player:IsMajor() then
-					print("Spawning settler off map")
-					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+				if player then
 					local playerUnits = player:GetUnits()
 					local toKill = {}
+					local offmapUnits = {}
 					for i, unit in playerUnits:Members() do
 						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
 							table.insert(toKill, unit)
-						end				
+						else
+							table.insert(offmapUnits, unit)
+						end
 					end
-					for i, unit in ipairs(toKill) do
-						playerUnits:Destroy(unit)
-					end	
+					if #offmapUnits < 1 then
+						print("No settler detected off map. Spawning settler at (-1, -1) to keep the player alive until their spawn date...")
+						UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
+					elseif #offmapUnits > 1 then
+						print("There are "..tostring(#offmapUnits).." extra settlers off map. Deleting extra settlers...")
+						for i, unit in ipairs(offmapUnits) do
+							if i < #offmapUnits then
+								playerUnits:Destroy(unit)
+								print("Deleting extra off map unit #"..tostring(i).."...")
+							end
+						end	
+					end
+					if #toKill > 0 then
+						print("This player has units on the map before their spawn date. Deleting these units")
+						for i, unit in ipairs(toKill) do
+							playerUnits:Destroy(unit)
+							-- print("Deleting unit for player spawn...")
+						end	
+					end
 					if player:IsHuman() then
 						LuaEvents.SetAutoValues()
 					end
-				end			
-				-- totalslacker: spawn city states according to historical spawn dates
-				if not player:IsMajor() then
-					UnitManager.InitUnit(player, "UNIT_SETTLER", -1, -1)
-					local playerUnits = player:GetUnits()
-					local toKill = {}
-					for i, unit in playerUnits:Members() do
-						if(unit:GetX() >= 0 or  unit:GetY() >= 0) then
-							table.insert(toKill, unit)
-						end				
-					end
-					for i, unit in ipairs(toKill) do
-						playerUnits:Destroy(unit)
-					end				
 				end	
 			end			
 		end
@@ -2668,6 +2699,15 @@ function OnCityInitialized(iPlayer, cityID, x, y)
 	local eraBuildingForAll = false
 	if eraBuildingCivs[CivilizationTypeName] then eraBuildingSpawn = true end
 	if bEraBuilding then eraBuildingForAll = true end
+	
+	--Remove all Era Buildings present in city before adding more
+	for kEra in GameInfo.Eras() do
+		local EraBuilding = GameInfo.Buildings["BUILDING_CENTER_"..tostring(kEra.EraType)]
+		if EraBuilding and city:GetBuildings():HasBuilding(EraBuilding.Index) then
+			city:GetBuildings():RemoveBuilding(EraBuilding.Index)
+			print("Deleting existing Era Building from city")
+		end
+	end
 	
 	-- Era Start Building for Era bonuses
 	if eraBuildingSpawn and not eraBuildingForAll then
