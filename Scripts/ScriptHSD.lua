@@ -2363,7 +2363,7 @@ function GetStartingBonuses(player)
 	player:GetReligion():ChangeFaithBalance(playerFaithBonus)
 	
 	-- token
-	if gameCurrentEra > 0 then
+	if player:IsHuman() and (gameCurrentEra > 0) then
 		tokenBonus = tokenBonus + gameCurrentEra
 	end
 	print(" - Token bonus = "..tostring(tokenBonus))
@@ -2379,13 +2379,15 @@ function GetStartingBonuses(player)
 				pTreasury:ChangeGoldBalance(playerGoldBonus)
 				print(" - Gold bonus from difficulty = "..tostring(playerGoldBonus))
 			end
-			player:GetInfluence():ChangeTokensToGive(iBonusDifficulty)
-			print(" - Token bonus from difficulty = "..tostring(iBonusDifficulty))
+			if player:IsHuman() and (gameCurrentEra > 0) then
+				player:GetInfluence():ChangeTokensToGive(iBonusDifficulty)
+				print(" - Token bonus from difficulty = "..tostring(iBonusDifficulty))
+			end
 		end
 	end
 	
 	-- Great Person Points
-	if bGrantGPP and gameCurrentEra > 0 then 
+	if bGrantGPP and (gameCurrentEra > 0) then 
 		--[[
 			Breakdown of Great Person Points or GPPoints:
 			
