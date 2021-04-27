@@ -7,13 +7,30 @@
 -- ===========================================================================
 --	Barbarian Tribe Types:
 --	0 - Naval Tribe (default)
---	1 - Melee Tribe (default)
---  2 - Cavalry Tribe (default)
---  3 - Kongo Tribe 
+--	1 - Cavalry Tribe (default)
+--  2 - Melee Tribe (default)
 
 g_CurrentBarbarianCamp = {}
 
-function SpawnUniqueBarbians(campPlot)
+iNavalBarbarianTribe = 0
+iCavalryBarbarianTribe = 1
+iMeleeBarbarianTribe = 2
+iKongoBarbarianTribe = 3
+iZuluBarbarianTribe = 4
+
+function CreateTribeAt( eType, iPlotIndex )
+
+	local pBarbManager = Game.GetBarbarianManager();
+
+   -- Clear improvement in case one already here
+   local pPlot = Map.GetPlotByIndex(iPlotIndex);
+   ImprovementBuilder.SetImprovementType(pPlot, -1, NO_PLAYER);   
+
+   local iTribeNumber = pBarbManager:CreateTribeOfType(eType, iPlotIndex);
+   return iTribeNumber;
+end
+
+function SpawnBarbsByPlayer(campPlot)
 	local bBarbarian = false
 	local isBarbarian = false
 	local isFreeCities = false
@@ -22,7 +39,7 @@ function SpawnUniqueBarbians(campPlot)
 	for iPlayer = 0, 63 do
 		local pPlayer = Players[iPlayer]
 		if pPlayer and pPlayer:IsMajor() then
-			--unfinished
+			-- unfinished
 		end
 		local sCivTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 		if pPlayer and pPlayer:IsBarbarian() then isBarbarian = true end
@@ -37,21 +54,79 @@ function SpawnUniqueBarbians(campPlot)
 		end		
 	end
 	if closestPlayerName then
-		bBarbarian = SpawnUniqueBarbarianTribe(closestPlayerName)
+		bBarbarian = SpawnUniqueBarbarianTribe(campPlot, closestPlayerName)
+	end
+	return bBarbarian
+end
+
+function SpawnBarbsByContinent(campPlot)
+	local bBarbarian = false
+	local continentType = campPlot:GetContinentType()
+	if continentType and GameInfo.Continents[continentType] then
+		bBarbarian = SpawnUniqueBarbarianTribe(campPlot, GameInfo.Continents[continentType].ContinentType)
 	end
 	return bBarbarian
 end
 
 function SpawnUniqueBarbarianTribe(campPlot, sCivTypeName)
+	print("Spawning a unique barbarian camp for "..tostring(sCivTypeName))
 	local bBarbarian = false
 	local pBarbManager = Game.GetBarbarianManager() 
-	local iPlotIndex = campPlot:GetIndex()
 	local iRange = 3;
+	local baseY = 300;
+	local maxY = 0;
+	local diffY = 0;
+	--Continents
+	local tContinents = Map.GetContinentsInUse()
+	if sCivTypeName == "CONTINENT_AFRICA" then
+		for i,iContinent in ipairs(tContinents) do
+			if (GameInfo.Continents[iContinent].ContinentType == sCivTypeName) then
+				local continentPlotIndexes = Map.GetContinentPlots(iContinent)
+				for j, pPlot in ipairs(continentPlotIndexes) do
+					local continentPlot = Map.GetPlotByIndex(pPlot); --get plot by index, continentPlotIndexes is an index table, not plot objects
+					if continentPlot:GetY() > maxY then maxY = continentPlot:GetY() end
+					if continentPlot:GetY() < baseY then baseY = continentPlot:GetY() end
+				end
+				diffY = maxY - baseY
+				lowerHalf = (maxY - (diffY/2))
+				print("Base Y is : "..tostring(baseY))
+				print("Max Y is : "..tostring(maxY))
+				print("difference of Y is : "..tostring(diffY))
+				print("Lower half of Y begins at : "..tostring(lowerHalf))
+			end
+		end	
+		if campPlot:IsCoastalLand() then
+			print("Spawning Naval tribes")
+			local eBarbarianTribeType = 3 --0 --Naval
+			local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+			pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_ANTI_CAVALRY", 2, campPlot:GetIndex(), iRange);
+		else
+			if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index then
+				print("Spawning Kongo tribes")
+				local eBarbarianTribeType = 3 --Kongo
+				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_KONGO", 2, campPlot:GetIndex(), iRange);
+			elseif(campPlot:GetY() < (maxY - (diffY/2))) then
+				--Subsaharan Africa
+				print("Spawning Zulu tribes")
+				local eBarbarianTribeType = 4 --Zulu
+				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_ZULU", 2, campPlot:GetIndex(), iRange);
+			else
+				--Nubian
+				print("Spawning Nubian tribes")
+				local eBarbarianTribeType = 5 --Zulu
+				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_NUBIAN", 2, campPlot:GetIndex(), iRange);
+			end
+		end
+	end
+	--Civilizations
 	if sCivTypeName == "CIVILIZATION_KONGO" then
 		local eBarbarianTribeType = 3 --Kongo
-		local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, iPlotIndex)
-		pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_MELEE", 2, iPlotIndex, iRange);
-		pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_RANGED", 1, iPlotIndex, iRange);
+		local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+		pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_MELEE", 2, campPlot:GetIndex(), iRange);
+		pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_RANGED", 1, campPlot:GetIndex(), iRange);
 	end
 	return bBarbarian
 end
@@ -61,8 +136,8 @@ function SpawnBarbarians(iX, iY, eImprovement, playerID, resource, isPillaged, i
 	local isBarbCamp = false
 	local pPlayer = Players[playerID]
 	local campPlot = Map.GetPlot(iX, iY)
-	print("Returning parameters")
-	print("iX is "..tostring(iX)..", iY is "..tostring(iY)..", eImprovement is "..tostring(eImprovement)..", playerID is "..tostring(playerID)..", resource is "..tostring(resource)..", isPillaged is "..tostring(isPillaged)..", isWorked is "..tostring(isWorked))
+	-- print("Returning parameters")
+	-- print("iX is "..tostring(iX)..", iY is "..tostring(iY)..", eImprovement is "..tostring(eImprovement)..", playerID is "..tostring(playerID)..", resource is "..tostring(resource)..", isPillaged is "..tostring(isPillaged)..", isWorked is "..tostring(isWorked))
 	local prevCamp = Game:GetProperty("BarbarianCamp_"..campPlot:GetIndex())
 	if not prevCamp and Players[playerID] == Players[63] then 
 		isBarbarian = true 
@@ -117,7 +192,7 @@ function SpawnBarbarians(iX, iY, eImprovement, playerID, resource, isPillaged, i
 			end
 			Game:SetProperty("BarbarianCamp_"..campPlot:GetIndex(), 1)
 			print("Original barbarians removed from map")
-			local newBarbCamp = SpawnUniqueBarbians(campPlot)
+			local newBarbCamp = SpawnBarbsByContinent(campPlot)
 		end
 	end
 	return isBarbarian

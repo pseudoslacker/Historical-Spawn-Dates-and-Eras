@@ -2886,7 +2886,7 @@ function OnLoadScreenClosed()
 	end
 	if bRagingBarbarians then
 		Events.ImprovementAddedToMap.Add(SpawnBarbarians)
-		Events.UnitAddedToMap.Add(RemoveBarbScouts)
+		-- Events.UnitAddedToMap.Add(RemoveBarbScouts)
 	end
 end
 Events.LoadScreenClose.Add(OnLoadScreenClosed)
