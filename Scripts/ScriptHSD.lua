@@ -1,11 +1,11 @@
 ------------------------------------------------------------------------------
 --	FILE:	 ScriptHSD.lua
 --  Gedemon (2017)
---  totalslacker (2020)
+--  totalslacker (2020-2021)
 --
 --	TODO:
 --	Different spawn date tables for custom scenarios [done]
---	Difficulty settings
+--	Difficulty settings [done]
 --	Support for plague mods [unlikely at this point]
 --	Expand the notification system with spawn failure and less info messages [done]
 --  Create config menu options for spawn dates (enter spawn dates from the menu, etc)
@@ -146,7 +146,7 @@ local defaultStartYear 		= -3960
 local defaultStartEra 		= 0
 local previousTurnYear 		= GameConfiguration.GetValue("PreviousTurnYear") or minimalStartYear
 local currentTurnYear 		= GameConfiguration.GetValue("CurrentTurnYear")
-local nextTurnYear 		= GameConfiguration.GetValue("NextTurnYear")
+local nextTurnYear 			= GameConfiguration.GetValue("NextTurnYear")
 
 local knownTechs		= {} 	-- Table to track each known tech (with number of civs) 
 local knownCivics		= {}	-- Table to track each known civic (with number of civs) 
@@ -283,9 +283,9 @@ function RemoveEraBuildings()
 					end
 				end
 				if #buildingsToDestroy > 1 then
-					for i, building in ipairs(buildingsToDestroy) do
-						if (i < #buildingsToDestroy) and city:GetBuildings():HasBuilding(building) then
-							city:GetBuildings():RemoveBuilding(building)
+					for i, eraBuildingIndex in ipairs(buildingsToDestroy) do
+						if (i < #buildingsToDestroy) and city:GetBuildings():HasBuilding(eraBuildingIndex) then
+							city:GetBuildings():RemoveBuilding(eraBuildingIndex)
 							print("Deleting extra Era Building #"..tostring(i).." from city...")
 						end
 					end
@@ -298,9 +298,96 @@ end
 -- ===========================================================================
 -- Notification Messages
 -- ===========================================================================
+function ShowSpawnNotifications(iPlayer, startingPlot, newStartingPlot, CivilizationTypeName)
+	local player = Players[iPlayer]
+	local turnYearString :string = "nil"
+	if bAnnoDomini then
+		turnYearString = ConvertYearToAnnoDomini(currentTurnYear)
+	else
+		turnYearString = tostring(currentTurnYear)
+	end
+	if player:IsHuman() then
+		if bNotifications then
+			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
+			if(#Notifications_revoltingCityPlots > 0) then
+				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
+					local freeCity = Cities.GetCityInPlot(freeCityPlot)
+					if freeCity then
+						local freeCityMessage = "The noble cause of the "..adjective.." nation has encouraged the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
+						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
+					end
+				end							
+			end
+		end
+		return true
+	else
+		if bNotifications and bHistoricalSpawnEras then
+			local name = "The "..Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_DESCRIPTION")
+			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
+			if(#Notifications_revoltingCityPlots > 0) then
+				if newStartingPlot then 
+					local messageNewPlot = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					-- local messageNewPlot = name.." has spawned at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
+				else
+					local message = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					-- local message = name.." has spawned at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
+				end
+				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
+					local freeCity = Cities.GetCityInPlot(freeCityPlot)
+					if freeCity then
+						local freeCityMessage = "The "..adjective.." rebellion caused the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
+						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
+					end
+				end
+			else
+				if newStartingPlot then 
+					local messageNewPlot = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the wandering "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
+				else
+					local message = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
+				end						
+			end
+		elseif(bNotifications and not bHistoricalSpawnEras) then
+			local name = "The "..Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_DESCRIPTION")
+			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
+			if(#Notifications_revoltingCityPlots > 0) then
+				if newStartingPlot then 
+					local messageNewPlot = "In the year "..turnYearString.." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					-- local messageNewPlot = name.." has spawned at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
+				else
+					local message = "In the year "..turnYearString.." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					-- local message = name.." has spawned at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
+				end
+				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
+					local freeCity = Cities.GetCityInPlot(freeCityPlot)
+					if freeCity then
+						local freeCityMessage = "The "..adjective.." rebellion caused the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
+						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
+					end
+				end
+			else
+				if newStartingPlot then 
+					local messageNewPlot = "In the year "..turnYearString.." the wandering "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
+				else
+					local message = "In the year "..turnYearString.." the "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
+					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
+				end						
+			end		
+		end
+		return true
+	end
+	return false
+end
+
 function Notification_FailedSpawn(iPlayer :number, pPlot :object, errorString :string)
 	print(errorString)
-	local aPlayers = PlayerManager.GetAliveMajors();
+	local aPlayers = PlayerManager.GetAliveMajors()
 	for loop, pPlayer in ipairs(aPlayers) do
 		if pPlayer:IsHuman() then
 			NotificationManager.SendNotification(pPlayer, NotificationTypes.REBELLION, "Spawn Failed!", errorString, pPlot:GetX(), pPlot:GetY())
@@ -312,7 +399,7 @@ end
 function Notification_GenericWithPlot(iPlayer :number, pPlot :object, headText :string, bodyText :string)
 	print(tostring(headText).." : "..tostring(bodyText))
 	local notification = false
-	local aPlayers = PlayerManager.GetAliveMajors();
+	local aPlayers = PlayerManager.GetAliveMajors()
 	for loop, pPlayer in ipairs(aPlayers) do
 		if pPlayer:IsHuman() then
 			notification = NotificationManager.SendNotification(pPlayer, NotificationTypes.REBELLION, headText, bodyText, pPlot:GetX(), pPlot:GetY())
@@ -890,6 +977,14 @@ function SetPlayerCityUIDatas( iPlayer )
 				for _,kDistrictDatas in pairs(kCityUIDatas.CityDistricts) do 
 					local plot = Map.GetPlot(kDistrictDatas.iPosX, kDistrictDatas.iPosY)
 					local iDistrictType = kDistrictDatas.iType
+					--Check if district exists in the unique districts table
+					if GameInfo.DistrictReplaces[GameInfo.Districts[iDistrictType].DistrictType] then
+						print("DistrictReplaces detected a "..tostring(GameInfo.Districts[iDistrictType].DistrictType))
+						iDistrictType = GameInfo.DistrictReplaces[GameInfo.Districts[iDistrictType].DistrictType].ReplacesDistrictType
+						print("Replaced with "..tostring(iDistrictType))
+						iDistrictType = GameInfo.Districts[iDistrictType].Index
+						print("Converted to number "..tostring(iDistrictType).." in the districts table.")
+					end
 					local iConstructionLevel = 100 --complete district					
 					pCityBuildQueue:CreateIncompleteDistrict(iDistrictType, plot:GetIndex(), iConstructionLevel)
 					--unfortunately we do not have any Lua function that can set a district to pillaged
@@ -1353,18 +1448,26 @@ function FindClosestStartingPlotByContinent(startingPlot)
 end
 
 --Give all players with HSD the Code of Laws civic to prevent issues with choosing a policy before spawning
+--Use different methods for AI and Human players to prevent popups and allow the AI to progress
+--Left the option open to give isolated players more starting civics in the code below
 function GetStartingCivics (iPlayer, isolatedSpawn)
 	local player = Players[iPlayer]
 	local pCulture = player:GetCulture()
 	if player and isolatedSpawn then
-		-- player:GetCulture():SetCivic(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, true)
-		local CultureCost  = pCulture:GetCultureCost(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index)
-		pCulture:SetCulturalProgress(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, CultureCost)
+		if player:IsHuman() then
+			player:GetCulture():SetCivic(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, true)
+		else
+			local CultureCost  = pCulture:GetCultureCost(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index)
+			pCulture:SetCulturalProgress(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, CultureCost)
+		end
 		return true
 	elseif(player) then
-		-- player:GetCulture():SetCivic(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, true)
-		local CultureCost  = pCulture:GetCultureCost(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index)
-		pCulture:SetCulturalProgress(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, CultureCost)		
+		if player:IsHuman() then
+			player:GetCulture():SetCivic(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, true)
+		else
+			local CultureCost  = pCulture:GetCultureCost(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index)
+			pCulture:SetCulturalProgress(GameInfo.Civics["CIVIC_CODE_OF_LAWS"].Index, CultureCost)
+		end
 		return true
 	end
 	return false
@@ -1380,7 +1483,7 @@ function OnPlayerEraChanged(PlayerID, iNewEraID)
 	local pPlayer = Players[PlayerID]
 	local iCitiesOwnedByPlayer :number = pPlayer:GetCities():GetCount()
 	print("iCitiesOwnedByPlayer is "..tostring(iCitiesOwnedByPlayer))
-	if iCitiesOwnedByPlayer and iCitiesOwnedByPlayer < 1 then
+	if iCitiesOwnedByPlayer and (iCitiesOwnedByPlayer < 1) then
 		return
 	end
 	if pPlayer:IsHuman() and not bPlayerColonies then
@@ -1402,7 +1505,9 @@ function OnPlayerEraChanged(PlayerID, iNewEraID)
 		print("The GameInfo for " .. iNewEraID .. " retrieved a nil value: this should not be possible")
 	end
 	local bColonizer = false
-	if colonizerCivs[sCivTypeName] then bColonizer = true end
+	if colonizerCivs[sCivTypeName] then 
+		bColonizer = true 
+	end
 	local bCartography = false
 	if pPlayer:GetTechs():HasTech(GameInfo.Technologies["TECH_CARTOGRAPHY"].Index) then
 		bCartography = true
@@ -1410,34 +1515,34 @@ function OnPlayerEraChanged(PlayerID, iNewEraID)
 	local bColonizationWave01 = Game.GetProperty("Colonization_Wave01_Player_#"..PlayerID)
 	local bColonizationWave02 = Game.GetProperty("Colonization_Wave02_Player_#"..PlayerID)
 	local bColonizationWave03 = Game.GetProperty("Colonization_Wave03_Player_#"..PlayerID)
-	if bColonizer and iNewEraID >= 3 and bCartography and not bColonizationWave01 then
+	if bColonizer and (iNewEraID >= 3) and bCartography and (not bColonizationWave01) then
 		--Spawn first colonies starting during Renaissance Era
 		colonyPlot = InitiateColonization_FirstWave(PlayerID, sCivTypeName)
 		bColonizationWave01 = Game.GetProperty("Colonization_Wave01_Player_#"..PlayerID)
 		if colonyPlot then
-			-- Notification_NewColony(PlayerID, colonyPlot)
+			Notification_NewColony(PlayerID, colonyPlot)
 			print("Spawned a Renaissance era colony for "..tostring(sCivTypeName))
 		else
 			print("Failed to spawn a new colony")
 		end
 	end
-	if bColonizer and iNewEraID >= 4 and bCartography and bColonizationWave01 and not bColonizationWave02 then
+	if bColonizer and (iNewEraID >= 4) and bCartography and bColonizationWave01 and (not bColonizationWave02) then
 		--Spawn second wave of colonies starting during Industrial Era
 		colonyPlot = InitiateColonization_SecondWave(PlayerID, sCivTypeName)
 		bColonizationWave02 = Game.GetProperty("Colonization_Wave02_Player_#"..PlayerID)
 		if colonyPlot then
-			-- Notification_NewColony(PlayerID, colonyPlot)
+			Notification_NewColony(PlayerID, colonyPlot)
 			print("Spawned a Industrial era colony for "..tostring(sCivTypeName))
 		else
 			print("Failed to spawn a new colony")
 		end
 	end
-	if bColonizer and iNewEraID >= 5 and bCartography and bColonizationWave01 and bColonizationWave02 and not bColonizationWave03 then
+	if bColonizer and (iNewEraID >= 5) and bCartography and bColonizationWave01 and bColonizationWave02 and (not bColonizationWave03) then
 		--Spawn third wave of colonies starting during Modern Era
 		colonyPlot = InitiateColonization_ThirdWave(PlayerID, sCivTypeName)
 		bColonizationWave03 = Game.GetProperty("Colonization_Wave03_Player_#"..PlayerID)
 		if colonyPlot then
-			-- Notification_NewColony(PlayerID, colonyPlot)
+			Notification_NewColony(PlayerID, colonyPlot)
 			print("Spawned a Modern era colony for "..tostring(sCivTypeName))
 		else
 			print("Failed to spawn a new colony")
@@ -1965,7 +2070,7 @@ function SpawnStartingCity(iPlayer, startingPlot)
 						UnitManager.InitUnit(iPlayer, "UNIT_SETTLER", startingPlot:GetX(), startingPlot:GetY())
 					end
 				elseif(player:GetCities():GetCount() < 1) then
-					-- print("iShortestDistance is "..tostring(iShortestDistance))
+					print("iShortestDistance is "..tostring(iShortestDistance))
 					if iShortestDistance == 3 then
 						local pCityInRange = FindClosestCityToPlotXY(startingPlot:GetX(), startingPlot:GetY())
 						-- local pCityInRange = false
@@ -2035,96 +2140,6 @@ function SpawnStartingCity(iPlayer, startingPlot)
 	return newStartingPlot
 end
 
-function ShowSpawnNotifications(iPlayer, startingPlot, newStartingPlot, CivilizationTypeName)
-	local player = Players[iPlayer]
-	local turnYearString :string = "nil"
-	if bAnnoDomini then
-		turnYearString = ConvertYearToAnnoDomini(currentTurnYear)
-	else
-		turnYearString = tostring(currentTurnYear)
-	end
-	if player:IsHuman() then
-		if bNotifications then
-			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
-			if(#Notifications_revoltingCityPlots > 0) then
-				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
-					local freeCity = Cities.GetCityInPlot(freeCityPlot)
-					if freeCity then
-						local freeCityMessage = "The noble cause of the "..adjective.." nation has encouraged the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
-						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
-					end
-				end							
-			end
-		end
-		Notifications_revoltingCityPlots = {}
-		LuaEvents.RestoreAutoValues()
-		return true
-	else
-		if bNotifications and bHistoricalSpawnEras then
-			local name = "The "..Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_DESCRIPTION")
-			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
-			if(#Notifications_revoltingCityPlots > 0) then
-				if newStartingPlot then 
-					local messageNewPlot = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					-- local messageNewPlot = name.." has spawned at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
-				else
-					local message = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					-- local message = name.." has spawned at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
-				end
-				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
-					local freeCity = Cities.GetCityInPlot(freeCityPlot)
-					if freeCity then
-						local freeCityMessage = "The "..adjective.." rebellion caused the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
-						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
-					end
-				end
-			else
-				if newStartingPlot then 
-					local messageNewPlot = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the wandering "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
-				else
-					local message = "At the dawn of the "..Locale.Lookup("LOC_"..GameInfo.Eras[gameCurrentEra].EraType.."_NAME").." the "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
-				end						
-			end
-		elseif(bNotifications and not bHistoricalSpawnEras) then
-			local name = "The "..Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_DESCRIPTION")
-			local adjective = Locale.Lookup("LOC_"..tostring(CivilizationTypeName).."_ADJECTIVE")
-			if(#Notifications_revoltingCityPlots > 0) then
-				if newStartingPlot then 
-					local messageNewPlot = "In the year "..turnYearString.." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					-- local messageNewPlot = name.." has spawned at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
-				else
-					local message = "In the year "..turnYearString.." the "..adjective.." people ended centuries of foreign domination. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					-- local message = name.." has spawned at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
-				end
-				for _, freeCityPlot in ipairs(Notifications_revoltingCityPlots) do
-					local freeCity = Cities.GetCityInPlot(freeCityPlot)
-					if freeCity then
-						local freeCityMessage = "The "..adjective.." rebellion caused the nearby city of "..Locale.Lookup(freeCity:GetName()).." to declare independance from its previous rulers!"
-						NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, "Civil war erupts!", freeCityMessage, freeCity:GetX(), freeCity:GetY())								
-					end
-				end
-			else
-				if newStartingPlot then 
-					local messageNewPlot = "In the year "..turnYearString.." the wandering "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(newStartingPlot:GetX())..", "..tostring(newStartingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", messageNewPlot, newStartingPlot:GetX(), newStartingPlot:GetY())
-				else
-					local message = "In the year "..turnYearString.." the "..adjective.." tribes unified under one ruler. "..name.." has emerged onto the world stage at "..tostring(startingPlot:GetX())..", "..tostring(startingPlot:GetY())
-					NotificationManager.SendNotification(Players[0], NotificationTypes.REBELLION, name.." emerges!", message, startingPlot:GetX(), startingPlot:GetY())
-				end						
-			end		
-		end
-		Notifications_revoltingCityPlots = {}
-		return true
-	end
-	return false
-end
-
 function SpawnPlayer(iPlayer)
 	local player = Players[iPlayer]
 	local bBarbarian = false
@@ -2144,8 +2159,6 @@ function SpawnPlayer(iPlayer)
 			local eraBuildingCiv = false
 			if eraBuildingCivs[CivilizationTypeName] then eraBuildingCiv = true end
 			local iTurn = Game.GetCurrentGameTurn()
-			--Give Era Score as function
-			-- GiveEraScore(player)
 			
 			-- Give era score before spawn
 			local era = player:GetEras():GetEra()
@@ -2268,7 +2281,13 @@ function SpawnPlayer(iPlayer)
 				
 				--Display ingame notifications
 				ShowSpawnNotifications(iPlayer, startingPlot, newStartingPlot, CivilizationTypeName)
-
+				
+				--Clear list of revolting cities for notifications and restore the UI values for auto end turn for the human player
+				Notifications_revoltingCityPlots = {}
+				if player:IsHuman() then
+					LuaEvents.RestoreAutoValues()
+				end
+				
 				return true			
 			end
 			return false
@@ -2308,12 +2327,19 @@ function GetStartingBonuses(player)
 	local pScience = player:GetTechs()	
 	for iTech, number in pairs(knownTechs) do
 		if number >= minCivForTech then
-			-- pScience:SetTech(iTech, true)
-			local ScienceCost  = pScience:GetResearchCost(iTech)
-			pScience:SetResearchProgress(iTech, ScienceCost)			
+			if player:IsHuman() then
+				pScience:SetTech(iTech, true) --use SetTech() for human player to skip popups
+			elseif(not player:IsHuman()) then --the AI will not research new techs or civics if we use SetTech() or SetCivic()
+				local ScienceCost  = pScience:GetResearchCost(iTech)
+				pScience:SetResearchProgress(iTech, ScienceCost)
+			end
 		elseif(bTechCivicBoost) then
-			local ScienceCost  = pScience:GetResearchCost(iTech)
-			pScience:SetResearchProgress(iTech, ScienceCost)
+			if player:IsHuman() then
+				pScience:SetTech(iTech, true)
+			elseif(not player:IsHuman()) then
+				local ScienceCost  = pScience:GetResearchCost(iTech)
+				pScience:SetResearchProgress(iTech, ScienceCost)
+			end
 		else
 			pScience:TriggerBoost(iTech)
 			pScience:SetResearchingTech(iTech)
@@ -2329,14 +2355,21 @@ function GetStartingBonuses(player)
 		local value		= kCivic.value
 		if knownCivics[iCivic] then
 			if knownCivics[iCivic] >= minCivForCivic then
-				-- pCulture:SetCivic(iCivic, true)
-				local CultureCost  = pCulture:GetCultureCost(iCivic)
-				pCulture:SetCulturalProgress(iCivic, CultureCost)
-				pCulture:SetCivicCompletedThisTurn(true)
+				if player:IsHuman() then 
+					pCulture:SetCivic(iCivic, true) --use SetCivic() for human player to skip popups
+				elseif(not player:IsHuman()) then --the AI will not research new techs or civics if we use SetTech() or SetCivic()
+					local CultureCost  = pCulture:GetCultureCost(iCivic)
+					pCulture:SetCulturalProgress(iCivic, CultureCost)
+					pCulture:SetCivicCompletedThisTurn(true)
+				end
 			elseif(bTechCivicBoost) then
-				local CultureCost  = pCulture:GetCultureCost(iCivic)
-				pCulture:SetCulturalProgress(iCivic, CultureCost)
-				pCulture:SetCivicCompletedThisTurn(true)
+				if player:IsHuman() then
+					pCulture:SetCivic(iCivic, true)
+				elseif(not player:IsHuman()) then
+					local CultureCost  = pCulture:GetCultureCost(iCivic)
+					pCulture:SetCulturalProgress(iCivic, CultureCost)
+					pCulture:SetCivicCompletedThisTurn(true)
+				end
 			else
 				pCulture:TriggerBoost(iCivic)
 			end
@@ -2414,8 +2447,10 @@ function GetStartingBonuses(player)
 				GPPoints = (((gameCurrentEra * 4)^2 * 2) * (GameSpeedMultiplier / 100))
 			elseif(gameCurrentEra == 2) then
 				GPPoints = 2 * ((((gameCurrentEra-1) * 4)^2 * 2) * (GameSpeedMultiplier / 100))
-			elseif(gameCurrentEra >= 3) then
+			elseif((gameCurrentEra >= 3) and (gameCurrentEra < 5)) then
 				GPPoints = ((((gameCurrentEra-1) * 4)^2 * 2) * (GameSpeedMultiplier / 100))
+			elseif(gameCurrentEra >= 5) then
+				GPPoints = 2 * ((((gameCurrentEra-1) * 4)^2 * 2) * (GameSpeedMultiplier / 100))
 			end
 		end
 		
@@ -2885,6 +2920,7 @@ function OnLoadScreenClosed()
 		Events.PlayerEraChanged.Add(OnPlayerEraChanged)
 	end
 	if bRagingBarbarians then
+		GetContinentDimensions()
 		Events.ImprovementAddedToMap.Add(SpawnBarbarians)
 		-- Events.UnitAddedToMap.Add(RemoveBarbScouts)
 	end

@@ -4,7 +4,7 @@
 	
 */
 
-INSERT OR REPLACE INTO GlobalParameters (Name, Value) VALUES ('HSD_VERSION', '1.2.3');
+INSERT OR REPLACE INTO GlobalParameters (Name, Value) VALUES ('HSD_VERSION', '1.3.0');
 
 /* Obselete code, leaving for posterity or in case it needs to be used again */
 

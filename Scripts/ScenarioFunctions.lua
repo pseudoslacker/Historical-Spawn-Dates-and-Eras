@@ -3,31 +3,181 @@
 -- ===========================================================================
 --
 -- ===========================================================================
--- Raging Barbarians & Unique Barbarians mode (incomplete)
+-- Raging Barbarians & Unique Barbarians mode
 -- ===========================================================================
---	Barbarian Tribe Types:
---	0 - Naval Tribe (default)
---	1 - Cavalry Tribe (default)
---  2 - Melee Tribe (default)
 
-g_CurrentBarbarianCamp = {}
+local g_CurrentBarbarianCamp = {}
 
-iNavalBarbarianTribe = 0
-iCavalryBarbarianTribe = 1
-iMeleeBarbarianTribe = 2
-iKongoBarbarianTribe = 3
-iZuluBarbarianTribe = 4
+-- local BarbarianTribeTypes = {
+		-- "TRIBE_NAVAL",
+		-- "TRIBE_CAVALRY",
+		-- "TRIBE_MELEE",
+		-- "TRIBE_KONGO",
+		-- "TRIBE_ZULU",
+		-- "TRIBE_NUBIAN",
+		-- "TRIBE_CELTIC",
+		-- "TRIBE_GREEK",
+		-- "TRIBE_VIKING",
+		-- "TRIBE_BARBARY",
+		-- "TRIBE_CREE",
+		-- "TRIBE_SCYTHIAN",
+		-- "TRIBE_AZTEC",
+		-- "TRIBE_MAORI",
+		-- "TRIBE_VARU",
+		-- "TRIBE_IBERIAN",
+		-- "TRIBE_BALKANS",
+		-- "TRIBE_SLAVIC",
+		-- "TRIBE_HAIDA",
+		-- "TRIBE_PIRATES",
+		-- "TRIBE_PERSIAN"
+-- }
+
+-- for i, pBarbarianTribeType in ipairs(BarbarianTribeTypes) do
+	-- if GameInfo.BarbarianTribes[pBarbarianTribeType] then
+		
+	-- end
+-- end
+
+local iNavalBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_NAVAL"]
+local iCavalryBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_CAVALRY"]
+local iMeleeBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_MELEE"]
+local KongoBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_KONGO"]
+local ZuluBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_ZULU"]
+local NubianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_NUBIAN"]
+local CelticBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_CELTIC"]
+local GreekBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_GREEK"]
+local VikingBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_VIKING"]
+local BarbaryCoastTribe = GameInfo.BarbarianTribes["TRIBE_BARBARY"]
+local CreeBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_CREE"]
+local ScythianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_SCYTHIAN"]
+local AztecBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_AZTEC"]
+local MaoriBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_MAORI"]
+local VaruBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_VARU"]
+local IberianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_IBERIAN"]
+local BalkansBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_BALKANS"]
+local SlavicBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_SLAVIC"]
+local HaidaBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_HAIDA"]
+local PirateBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_PIRATES"]
+local PersianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_PERSIAN"]
+local ComancheBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_COMANCHE"]
+local PatagonianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_PATAGONIAN"]
+local SouthAmericanTribe = GameInfo.BarbarianTribes["TRIBE_SOUTH_AMERICAN"]
+local AustralianTribe = GameInfo.BarbarianTribes["TRIBE_AUSTRALIAN"]
+local IncanBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_INCAN"]
+local MaliBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_MALI"]
+local EastAsianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_EASTASIAN"]
+local SiberianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_SIBERIAN"]
+
+local ContinentDimensions = {}
+
+function GetContinentDimensions()
+	print("Gathering continent dimensions...")
+	local g_iW, g_iH = Map.GetGridSize()
+	print("Map width is "..tostring(g_iW).." and Map height is "..tostring(g_iH))
+	local tContinents = Map.GetContinentsInUse()
+	for i,iContinent in ipairs(tContinents) do
+		if (GameInfo.Continents[iContinent].ContinentType) then
+			print("Continent type is "..tostring(GameInfo.Continents[iContinent].ContinentType))
+			local baseY = 300;
+			local maxY = 0;
+			local spanY = 0;
+			local lowerHalf = 0;
+			local baseX = 300;
+			local maxX = 0;
+			local spanX = 0;
+			local rightHalf = 0;
+			local wrapContinent = false
+			local continentTypeName = GameInfo.Continents[iContinent].ContinentType
+			local continentPlotIndexes = Map.GetContinentPlots(iContinent)
+			for j, pPlot in ipairs(continentPlotIndexes) do
+				local continentPlot = Map.GetPlotByIndex(pPlot); --get plot by index, continentPlotIndexes is an index table, not plot objects
+				if continentPlot:GetX() > maxX then maxX = continentPlot:GetX() end
+				if continentPlot:GetX() < baseX then baseX = continentPlot:GetX() end
+				if continentPlot:GetY() > maxY then maxY = continentPlot:GetY() end
+				if continentPlot:GetY() < baseY then baseY = continentPlot:GetY() end
+			end
+			-- print("Finding the height and width of the continent, and the central axes")
+			spanX = maxX - baseX
+			rightHalf = (maxX - (spanX/2))
+			spanY = maxY - baseY
+			lowerHalf = (maxY - (spanY/2))
+			if (baseX == 0) and (maxX == (g_iW - 1)) then
+				print("Detected continent that crosses the edge of the map")
+				wrapContinent = true
+				local xSpanTable = {}
+				local ContinentPlots = {}
+				local Nullspace = {}
+				local iCount = 0
+				local largestNullSpace = 0
+				local boundaryIndex = 0
+				for j, pPlot in ipairs(continentPlotIndexes) do
+					local continentPlot = Map.GetPlotByIndex(pPlot); --get plot by index, continentPlotIndexes is an index table, not plot objects
+					if not ContinentPlots[continentPlot:GetX()] then
+						ContinentPlots[continentPlot:GetX()] = continentPlot:GetX()
+					end
+				end
+				for i = 0, (g_iW - 1), 1 do
+					if ContinentPlots[i] then
+						table.insert(xSpanTable, ContinentPlots[i])
+					else
+						table.insert(xSpanTable, -1)
+						table.insert(Nullspace, i)
+					end
+				end
+				-- print("Iterate null space")
+				-- for j, pPlot in ipairs(Nullspace) do
+					-- print(Nullspace[j])
+				-- end
+				for j, nullPlot in ipairs(Nullspace) do
+					if (Nullspace[j + 1] ==  (nullPlot + 1)) then
+						iCount = iCount + 1
+					else
+						if largestNullSpace < iCount then
+							largestNullSpace = iCount
+							boundaryIndex = Nullspace[j - largestNullSpace]
+							print("Largest null space is "..tostring(largestNullSpace))
+							print("Boundary index is "..tostring(boundaryIndex))
+						end
+						iCount = 0
+					end
+				end
+				-- print("Iterate span table")
+				-- for j, pPlot in ipairs(xSpanTable) do
+					-- print(xSpanTable[j])
+				-- end
+				baseX = boundaryIndex + largestNullSpace
+				maxX = maxX + boundaryIndex
+				spanX = maxX - baseX
+				rightHalf = (maxX - (spanX/2))
+				if rightHalf > (g_iW - 1) then
+					print("Right half of continent begins beyond the edge of the map")
+					rightHalf = rightHalf - g_iW
+				end
+			end	
+			print("Base X is : "..tostring(baseX))
+			print("Max X is : "..tostring(maxX))
+			print("Span of X is : "..tostring(spanX))
+			print("Right half of X begins at : "..tostring(rightHalf))
+			print("Base Y is : "..tostring(baseY))
+			print("Max Y is : "..tostring(maxY))
+			print("Span of Y is : "..tostring(spanY))
+			print("Lower half of Y begins at : "..tostring(lowerHalf))
+			ContinentDimensions[continentTypeName] = {maxX = maxX, spanX = spanX, rightHalf = rightHalf, maxY = maxY, spanY = spanY, lowerHalf = lowerHalf, baseX = baseX}
+			-- print("Table results: maxX is "..tostring(ContinentDimensions[continentTypeName].maxX))
+		end
+	end	
+end
 
 function CreateTribeAt( eType, iPlotIndex )
-
-	local pBarbManager = Game.GetBarbarianManager();
-
-   -- Clear improvement in case one already here
-   local pPlot = Map.GetPlotByIndex(iPlotIndex);
-   ImprovementBuilder.SetImprovementType(pPlot, -1, NO_PLAYER);   
-
-   local iTribeNumber = pBarbManager:CreateTribeOfType(eType, iPlotIndex);
-   return iTribeNumber;
+	local pBarbManager = Game.GetBarbarianManager()
+	local pPlot = Map.GetPlotByIndex(iPlotIndex)
+	-- print("Clearing existing camp")
+	ImprovementBuilder.SetImprovementType(pPlot, -1, NO_PLAYER)
+	-- print("New camp created")
+	local iTribeNumber = pBarbManager:CreateTribeOfType(eType, iPlotIndex)
+	-- print("Spawning camp defender of type "..tostring(GameInfo.BarbarianTribes[eType].DefenderTag))
+	-- pBarbManager:CreateTribeUnits(eType, GameInfo.BarbarianTribes[eType].DefenderTag, 1, iPlotIndex, 1)
+	return iTribeNumber
 end
 
 function SpawnBarbsByPlayer(campPlot)
@@ -68,56 +218,744 @@ function SpawnBarbsByContinent(campPlot)
 	return bBarbarian
 end
 
+function SpawnRagingBarbs(iBarbarianTribe, campPlot)
+	local iRange = 3
+	if iBarbarianTribe == ZuluBarbarianTribe then
+		pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_ZULU", 1, campPlot:GetIndex(), iRange);
+	end
+end
+
+function CheckForSurroundingResource(campPlot, resourceType)
+	local bResourceFound = false
+	local range = 3
+	for dx = -range, range do
+		for dy = -range, range do
+			print("Searching for nearby resource: "..tostring(resourceType))
+			local otherPlot = Map.GetPlotXY(campPlot:GetX(), campPlot:GetY(), dx, dy, range)
+			if otherPlot and (otherPlot:GetResourceType() ~= -1) then
+				local otherPlotResource = otherPlot:GetResourceType()
+				print("Detected resource of type: "..tostring(otherPlotResource))
+				if (otherPlotResource == resourceType) or (GameInfo.Resources[otherPlotResource].ResourceType == resourceType) then
+					bResourceFound = true
+					print("Detected resource matches resourceType")
+				end
+			end
+		end
+	end
+	return bResourceFound
+end
+
 function SpawnUniqueBarbarianTribe(campPlot, sCivTypeName)
 	print("Spawning a unique barbarian camp for "..tostring(sCivTypeName))
 	local bBarbarian = false
+	local bIsCoastalCamp = false
 	local pBarbManager = Game.GetBarbarianManager() 
 	local iRange = 3;
-	local baseY = 300;
-	local maxY = 0;
-	local diffY = 0;
-	--Continents
-	local tContinents = Map.GetContinentsInUse()
-	if sCivTypeName == "CONTINENT_AFRICA" then
-		for i,iContinent in ipairs(tContinents) do
-			if (GameInfo.Continents[iContinent].ContinentType == sCivTypeName) then
-				local continentPlotIndexes = Map.GetContinentPlots(iContinent)
-				for j, pPlot in ipairs(continentPlotIndexes) do
-					local continentPlot = Map.GetPlotByIndex(pPlot); --get plot by index, continentPlotIndexes is an index table, not plot objects
-					if continentPlot:GetY() > maxY then maxY = continentPlot:GetY() end
-					if continentPlot:GetY() < baseY then baseY = continentPlot:GetY() end
-				end
-				diffY = maxY - baseY
-				lowerHalf = (maxY - (diffY/2))
-				print("Base Y is : "..tostring(baseY))
-				print("Max Y is : "..tostring(maxY))
-				print("difference of Y is : "..tostring(diffY))
-				print("Lower half of Y begins at : "..tostring(lowerHalf))
+	local maxY = ContinentDimensions[sCivTypeName].maxY
+	local spanY = ContinentDimensions[sCivTypeName].spanY
+	local lowerHalf = ContinentDimensions[sCivTypeName].lowerHalf
+	local maxX = ContinentDimensions[sCivTypeName].maxX
+	local spanX = ContinentDimensions[sCivTypeName].spanX
+	local rightHalf = ContinentDimensions[sCivTypeName].rightHalf
+	local baseX = ContinentDimensions[sCivTypeName].baseX
+	-- print("Checking barbarian camp surroundings")
+	if campPlot:IsCoastalLand() then
+		print("Coastal land camp detected. Checking adjacent plots...")
+		local iWaterAdjacent = 0
+		for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+			local adjacentPlot = Map.GetAdjacentPlot(campPlot:GetX(), campPlot:GetY(), direction)
+			if adjacentPlot and adjacentPlot:IsWater() and not adjacentPlot:IsLake() then
+				iWaterAdjacent = iWaterAdjacent + 1
 			end
-		end	
-		if campPlot:IsCoastalLand() then
-			print("Spawning Naval tribes")
-			local eBarbarianTribeType = 3 --0 --Naval
-			local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
-			pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_ANTI_CAVALRY", 2, campPlot:GetIndex(), iRange);
-		else
-			if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index then
-				print("Spawning Kongo tribes")
-				local eBarbarianTribeType = 3 --Kongo
-				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
-				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_KONGO", 2, campPlot:GetIndex(), iRange);
-			elseif(campPlot:GetY() < (maxY - (diffY/2))) then
-				--Subsaharan Africa
-				print("Spawning Zulu tribes")
-				local eBarbarianTribeType = 4 --Zulu
-				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
-				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_ZULU", 2, campPlot:GetIndex(), iRange);
+		end		
+		print("iWaterAdjacent is "..tostring(iWaterAdjacent))
+		if iWaterAdjacent >= 3 then		
+			print("iWaterAdjacent is high enough to spawn a naval tribe")
+			bIsCoastalCamp = true
+		end
+	end	
+	print("Spawning barbarian camp based on continent")
+	if sCivTypeName == "CONTINENT_AFRICA" then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Africa
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Atlantic coast
+					if ZuluBarbarianTribe then
+						local iBarbarianTribeType = ZuluBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(ZuluBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Indian coast
+					if BarbaryCoastTribe then
+						local iBarbarianTribeType = BarbaryCoastTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(BarbaryCoastTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
 			else
-				--Nubian
-				print("Spawning Nubian tribes")
-				local eBarbarianTribeType = 5 --Zulu
+				--North African coast
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Maghreb
+					if BarbaryCoastTribe then
+						local iBarbarianTribeType = BarbaryCoastTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(BarbaryCoastTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Libya
+					if GreekBarbarianTribe then
+						local iBarbarianTribeType = GreekBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(GreekBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index then
+				if KongoBarbarianTribe then
+					local iBarbarianTribeType = KongoBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(KongoBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			elseif(campPlot:GetY() < lowerHalf) then
+				--Subsaharan Africa
+				if ZuluBarbarianTribe then
+					local iBarbarianTribeType = ZuluBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(ZuluBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--North Africa
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Mali
+					if MaliBarbarianTribe then
+						local iBarbarianTribeType = MaliBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaliBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Nubian
+					if NubianBarbarianTribe then
+						local iBarbarianTribeType = NubianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(NubianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_ASIA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Asia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Middle East
+					if BarbaryCoastTribe then
+						local iBarbarianTribeType = BarbaryCoastTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(BarbaryCoastTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Indochina
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Asia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Central Asia
+					if ScythianBarbarianTribe then
+						local iBarbarianTribeType = ScythianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(ScythianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--East Asia
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Asia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Middle East
+					if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index then
+						if VaruBarbarianTribe then
+							local iBarbarianTribeType = VaruBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(VaruBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					else
+						if PersianBarbarianTribe then
+							local iBarbarianTribeType = PersianBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PersianBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					end
+				else
+					--Indochina
+					if VaruBarbarianTribe then
+						local iBarbarianTribeType = VaruBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(VaruBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Asia
+				if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index then
+					if VaruBarbarianTribe then
+						local iBarbarianTribeType = VaruBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(VaruBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				elseif ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Central Asia / Middle East
+					if not ((campPlot:GetTerrainType() == GameInfo.Terrains["TERRAIN_GRASS_HILLS"].Index) or (campPlot:GetTerrainType() == GameInfo.Terrains["TERRAIN_PLAINS_HILLS"].Index) or (campPlot:GetTerrainType() == GameInfo.Terrains["TERRAIN_DESERT_HILLS"].Index)) then
+						if ScythianBarbarianTribe then
+							local iBarbarianTribeType = ScythianBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(ScythianBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					else
+						if PersianBarbarianTribe then
+							local iBarbarianTribeType = PersianBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PersianBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					end
+				else
+					--East Asia
+					if not ((campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FOREST"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FLOODPLAINS"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FLOODPLAINS_GRASSLAND"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FLOODPLAINS_PLAINS"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_MARSH"].Index) or (campPlot:GetTerrainClassType() == GameInfo.TerrainClasses["TERRAIN_CLASS_TUNDRA"].Index) or (campPlot:GetTerrainClassType() == GameInfo.TerrainClasses["TERRAIN_CLASS_SNOW"].Index)) then
+						if MongolBarbarianTribe then
+							local iBarbarianTribeType = MongolBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MongolBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					else
+						if EastAsianBarbarianTribe then
+							local iBarbarianTribeType = EastAsianBarbarianTribe.Index
+							local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+							print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(EastAsianBarbarianTribe.TribeType))
+						else
+							print("Tribe type is nil")
+						end
+					end
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_AUSTRALIA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Australia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Western Australia
+					if AustralianTribe then
+						local iBarbarianTribeType = AustralianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--NSW & Victoria
+					if AustralianTribe then
+						local iBarbarianTribeType = AustralianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Australia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Northern Territories
+					if AustralianTribe then
+						local iBarbarianTribeType = AustralianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Queensland
+					if AustralianTribe then
+						local iBarbarianTribeType = AustralianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Australia
+				if AustralianTribe then
+					local iBarbarianTribeType = AustralianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--Northern Australia
+				if AustralianTribe then
+					local iBarbarianTribeType = AustralianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AustralianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_EUROPE") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Europe
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Western Mediterranean
+					if GreekBarbarianTribe then
+						local iBarbarianTribeType = GreekBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(GreekBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Eastern Mediterranean
+					if GreekBarbarianTribe then
+						local iBarbarianTribeType = GreekBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(GreekBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Europe
+				if VikingBarbarianTribe then
+					local iBarbarianTribeType = VikingBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(VikingBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Europe
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					if IberianBarbarianTribe then
+						local iBarbarianTribeType = IberianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(IberianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					if BalkansBarbarianTribe then
+						local iBarbarianTribeType = BalkansBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(BalkansBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Europe
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					if CelticBarbarianTribe then
+						local iBarbarianTribeType = CelticBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(CelticBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					if SlavicBarbarianTribe then
+						local iBarbarianTribeType = SlavicBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SlavicBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_NORTH_AMERICA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern NA
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Pacific Coast
+					if AztecBarbarianTribe then
+						local iBarbarianTribeType = AztecBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AztecBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Atlantic Coast
+					if PirateBarbarianTribe then
+						local iBarbarianTribeType = PirateBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PirateBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern NA
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Alaska / PNW
+					if HaidaBarbarianTribe then
+						local iBarbarianTribeType = HaidaBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(HaidaBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Quebec
+					if CreeBarbarianTribe then
+						local iBarbarianTribeType = CreeBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(CreeBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern NA
+				if AztecBarbarianTribe then
+					local iBarbarianTribeType = AztecBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(AztecBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--Northern NA
+				if not ((campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FOREST"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_MARSH"].Index) or (campPlot:GetTerrainClassType() == GameInfo.TerrainClasses["TERRAIN_CLASS_TUNDRA"].Index) or (campPlot:GetTerrainClassType() == GameInfo.TerrainClasses["TERRAIN_CLASS_SNOW"].Index)) then
+					if ComancheBarbarianTribe then
+						local iBarbarianTribeType = ComancheBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(ComancheBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					if CreeBarbarianTribe then
+						local iBarbarianTribeType = CreeBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(CreeBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_OCEANIA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Pacific
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Fiji
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Easter Island
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Pacific
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Guam
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Hawaii
+					if MaoriBarbarianTribe then
+						local iBarbarianTribeType = MaoriBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Pacific
+				if MaoriBarbarianTribe then
+					local iBarbarianTribeType = MaoriBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--Northern Pacific
+				if MaoriBarbarianTribe then
+					local iBarbarianTribeType = MaoriBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_SIBERIA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Siberia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Central Russia
+					if SiberianBarbarianTribe then
+						local iBarbarianTribeType = SiberianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Far Eastern Russia
+					if SiberianBarbarianTribe then
+						local iBarbarianTribeType = SiberianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern Siberia
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Central Russia
+					if SiberianBarbarianTribe then
+						local iBarbarianTribeType = SiberianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Far Eastern Russia
+					if SiberianBarbarianTribe then
+						local iBarbarianTribeType = SiberianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern Siberia
+				if SiberianBarbarianTribe then
+					local iBarbarianTribeType = SiberianBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--Northern Siberia
+				if SiberianBarbarianTribe then
+					local iBarbarianTribeType = SiberianBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SiberianBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_SOUTH_AMERICA") then
+		if bIsCoastalCamp then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern SA
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Pacific Coast
+					if PatagonianBarbarianTribe then
+						local iBarbarianTribeType = PatagonianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PatagonianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--Atlantic Coast
+					if PatagonianBarbarianTribe then
+						local iBarbarianTribeType = PatagonianBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PatagonianBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			else
+				--Northern SA
+				if ((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX))) then
+					--Colombian Coast
+					if IncanBarbarianTribe then
+						local iBarbarianTribeType = IncanBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(IncanBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					--North Brazilian Coast
+					if SouthAmericanTribe then
+						local iBarbarianTribeType = SouthAmericanTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SouthAmericanTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		elseif(not bIsCoastalCamp) then
+			if (campPlot:GetY() < lowerHalf) then
+				--Southern SA
+				if PatagonianBarbarianTribe then
+					local iBarbarianTribeType = PatagonianBarbarianTribe.Index
+					local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+					print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(PatagonianBarbarianTribe.TribeType))
+				else
+					print("Tribe type is nil")
+				end
+			else
+				--Northern SA
+				if not ((campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FOREST"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_JUNGLE"].Index) or (campPlot:GetFeatureType() == GameInfo.Features["FEATURE_MARSH"].Index)) or (((campPlot:GetX() < rightHalf) and (campPlot:GetX() >= baseX)) or ((baseX > rightHalf) and ((campPlot:GetX() < rightHalf) or (campPlot:GetX() >= baseX)))) then
+					if IncanBarbarianTribe then
+						local iBarbarianTribeType = IncanBarbarianTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(IncanBarbarianTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				else
+					if SouthAmericanTribe then
+						local iBarbarianTribeType = SouthAmericanTribe.Index
+						local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+						print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(SouthAmericanTribe.TribeType))
+					else
+						print("Tribe type is nil")
+					end
+				end
+			end
+		end
+	elseif(sCivTypeName == "CONTINENT_ZEALANDIA") then
+		if bIsCoastalCamp then
+			if MaoriBarbarianTribe then
+				local iBarbarianTribeType = MaoriBarbarianTribe.Index
+				local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+				print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+			else
+				print("Tribe type is nil")
+			end
+		elseif(not bIsCoastalCamp) then
+			if MaoriBarbarianTribe then
+				local iBarbarianTribeType = MaoriBarbarianTribe.Index
+				local iBarbarianTribe = CreateTribeAt(iBarbarianTribeType, campPlot:GetIndex())
+				print("Spawning tribe #"..tostring(iBarbarianTribeType)..", "..tostring(MaoriBarbarianTribe.TribeType))
+			else
+				print("Tribe type is nil")
+			end
+		end
+	elseif(sCivTypeName) then
+		--Generic Continent
+		if bIsCoastalCamp then
+			print("Spawning generic naval tribes for continent "..tostring(sCivTypeName))
+			local eBarbarianTribeType = iNavalBarbarianTribe
+			local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+			-- pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_ANTI_CAVALRY", 2, campPlot:GetIndex(), iRange);
+		elseif(not bIsCoastalCamp) then
+			if campPlot:GetFeatureType() == GameInfo.Features["FEATURE_FOREST"].Index then
+				print("Spawning generic tribes for continent "..tostring(sCivTypeName))
+				local eBarbarianTribeType = iMeleeBarbarianTribe
 				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
-				pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_NUBIAN", 2, campPlot:GetIndex(), iRange);
+				-- pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_CELTIC", 2, campPlot:GetIndex(), iRange);
+			elseif(campPlot:GetY() < (maxY - (spanY/2))) then
+				--Southern Continent
+				print("Spawning generic tribes for continent "..tostring(sCivTypeName))
+				local eBarbarianTribeType = iMeleeBarbarianTribe
+				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+				-- pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_CELTIC", 2, campPlot:GetIndex(), iRange);
+			else
+				--Northern Continent
+				print("Spawning generic tribes for continent "..tostring(sCivTypeName))
+				local eBarbarianTribeType = iMeleeBarbarianTribe
+				local iBarbarianTribe = CreateTribeAt(eBarbarianTribeType, campPlot:GetIndex())
+				-- pBarbManager:CreateTribeUnits(iBarbarianTribe, "CLASS_BARB_CELTIC", 2, campPlot:GetIndex(), iRange);
 			end
 		end
 	end
@@ -135,69 +973,97 @@ function SpawnBarbarians(iX, iY, eImprovement, playerID, resource, isPillaged, i
 	local isBarbarian = false
 	local isBarbCamp = false
 	local pPlayer = Players[playerID]
-	local campPlot = Map.GetPlot(iX, iY)
+	local campPlot : table = Map.GetPlot(iX, iY)
 	-- print("Returning parameters")
 	-- print("iX is "..tostring(iX)..", iY is "..tostring(iY)..", eImprovement is "..tostring(eImprovement)..", playerID is "..tostring(playerID)..", resource is "..tostring(resource)..", isPillaged is "..tostring(isPillaged)..", isWorked is "..tostring(isWorked))
 	local prevCamp = Game:GetProperty("BarbarianCamp_"..campPlot:GetIndex())
-	if not prevCamp and Players[playerID] == Players[63] then 
+	if (not prevCamp) and (Players[playerID] == Players[63]) then 
 		isBarbarian = true 
-		print("isBarbarian is "..tostring(isBarbarian))
+		-- print("isBarbarian is "..tostring(isBarbarian))
 	else
-		print("isBarbarian is "..tostring(isBarbarian)..", prevCamp is "..tostring(prevCamp))
+		-- print("isBarbarian is "..tostring(isBarbarian)..", prevCamp is "..tostring(prevCamp))
 		return isBarbarian
 	end
 	if GameInfo.Improvements[eImprovement] then
-		print("GameInfo ImprovementType is "..tostring(GameInfo.Improvements["IMPROVEMENT_BARBARIAN_CAMP"].ImprovementType))
-		print("GameInfo eImprovement is "..tostring(GameInfo.Improvements[eImprovement].ImprovementType))
+		-- print("GameInfo ImprovementType is "..tostring(GameInfo.Improvements["IMPROVEMENT_BARBARIAN_CAMP"].ImprovementType))
+		-- print("GameInfo eImprovement is "..tostring(GameInfo.Improvements[eImprovement].ImprovementType))
 		if GameInfo.Improvements[eImprovement].ImprovementType == GameInfo.Improvements["IMPROVEMENT_BARBARIAN_CAMP"].ImprovementType then
-			print("Barbarian camp detected from GameInfo")
+			-- print("Barbarian camp detected from GameInfo")
+			print("iX is "..tostring(iX)..", iY is "..tostring(iY))
 			local plotUnits = Units.GetUnitsInPlot(campPlot)
 			local barbUnits = pPlayer:GetUnits()
 			local adjPlots = Map.GetAdjacentPlots(iX, iY)
 			local adjPlotUnits = {}
 			local toKill = {}
+			
+			--Obselete code below. We set the default barbarian camps to empty, instead of trying to delete the default units that spawn
+			
 			-- table.insert(g_CurrentBarbarianCamp, campPlot)
-			print("#barbUnits is "..tostring(#barbUnits))
-			ImprovementBuilder.SetImprovementType(campPlot, -1)
-			print("Original barbarian camp destroyed")
-			if plotUnits ~= nil then
-				for i, pUnit in ipairs(plotUnits) do
-					table.insert(toKill, pUnit)
-				end
-				for i, pUnit in ipairs(toKill) do
-					UnitManager.Kill(pUnit)
-					print("Killing original barbarian unit")
-				end	
-				toKill = {}
-			end	
-			for i, pUnit in ipairs(barbUnits) do
-				if pUnit then
-					print("Barbarian unit detected at "..tostring(pUnit:GetX())..", "..tostring(pUnit:GetY()))
-					local pUnitPlot = Map.GetPlot(pUnit:GetX(), pUnit:GetY())
-					local distance = Map.GetPlotDistance(campPlot:GetIndex(), pUnitPlot:GetIndex());
-					print("Plot distance is "..tostring(distance))
-					if distance <= 3 then
-						print("Barbarian scout detected")
-						table.insert(toKill, pUnit)				
-					end				
-				end
-			end
-			if #toKill > 0 then
-				for i, pUnit in ipairs(toKill) do
-					if pUnit then
-						UnitManager.Kill(pUnit)
-						print("Killing original barbarian scout")
-					end
-				end					
-			end
+			-- print("#barbUnits is "..tostring(#barbUnits))
+			-- ImprovementBuilder.SetImprovementType(campPlot, -1)
+			-- print("Original barbarian camp destroyed")
+			
+			-- if plotUnits ~= nil then
+				-- for i, pUnit in ipairs(plotUnits) do
+					-- table.insert(toKill, pUnit)
+				-- end
+				-- for i, pUnit in ipairs(toKill) do
+					-- UnitManager.Kill(pUnit)
+					-- print("Killing original barbarian unit in camp")
+				-- end	
+				-- toKill = {}
+			-- end	
+			
+			-- for i, pUnit in ipairs(barbUnits) do
+				-- if pUnit then
+					-- print("Barbarian unit detected at "..tostring(pUnit:GetX())..", "..tostring(pUnit:GetY()))
+					-- local pUnitPlot = Map.GetPlot(pUnit:GetX(), pUnit:GetY())
+					-- local distance = Map.GetPlotDistance(campPlot:GetIndex(), pUnitPlot:GetIndex());
+					-- print("Plot distance is "..tostring(distance))
+					-- if distance <= 3 then
+						-- print("Barbarian scout detected")
+						-- table.insert(toKill, pUnit)				
+					-- end				
+				-- end
+			-- end
+			
+			-- local range = 3
+			-- for dx = -range, range do
+				-- for dy = -range, range do
+					-- print("Searching for barbarian scouts nearby")
+					-- local otherPlot = Map.GetPlotXY(campPlot:GetX(), campPlot:GetY(), dx, dy, range)
+					-- if otherPlot and otherPlot:IsUnit() then
+						-- local otherPlotUnits = Units.GetUnitsInPlot(otherPlot)
+						-- for i, pUnit in ipairs(otherPlotUnits) do
+							-- if pUnit and ((pUnit:GetTypeHash() == GameInfo.Units["UNIT_SCOUT"].Hash) or (pUnit:GetTypeHash() == GameInfo.Units["UNIT_SKIRMISHER"].Hash)) then
+								-- local pUnitOwnerID = pUnit:GetOwner()
+								-- if pUnitOwnerID == 63 then
+									-- print("Barbarian recon unit detected")
+									-- table.insert(toKill, pUnit)
+								-- end
+							-- end
+						-- end
+					-- end
+				-- end
+			-- end
+			-- if #toKill > 0 then
+				-- for i, pUnit in ipairs(toKill) do
+					-- if pUnit then
+						-- UnitManager.Kill(pUnit)
+						-- print("Killing original barbarian scout")
+					-- end
+				-- end					
+			-- end
+			
 			Game:SetProperty("BarbarianCamp_"..campPlot:GetIndex(), 1)
-			print("Original barbarians removed from map")
+			
 			local newBarbCamp = SpawnBarbsByContinent(campPlot)
 		end
 	end
 	return isBarbarian
 end
 
+--Obselete code, but still functional
 function RemoveBarbScouts( playerID:number, unitID:number )
 	local player 			= Players[playerID]
 	if not player:IsBarbarian() then
@@ -206,7 +1072,7 @@ function RemoveBarbScouts( playerID:number, unitID:number )
 	local unit 				= UnitManager.GetUnit(playerID, unitID)
 	local turnsFromStart 	= Game.GetCurrentGameTurn() - GameConfiguration.GetStartTurn()
 	local tempTable = {}
-	if unit and player and unit:GetType() == GameInfo.Units["UNIT_SCOUT"].Index and player:IsBarbarian() then
+	if unit and player and (unit:GetType() == GameInfo.Units["UNIT_SCOUT"].Index) and player:IsBarbarian() then
 		local range = 3
 		for dx = -range, range do
 			for dy = -range, range do

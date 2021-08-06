@@ -233,8 +233,9 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 3 then
 		--Renaissance
 		if bGatheringStormActive then
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 40)
 			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_NITER'].Index, 20)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 20)		
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 40)		
 		end
 		SpawnUnit_Ranged(iPlayer, pPlot, currentEra)
 		SpawnUnit_AntiCav(iPlayer, pPlot, currentEra)
@@ -257,8 +258,10 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 4 then
 		--Industrial
 		if bGatheringStormActive then
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_NITER'].Index, 20)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 20)		
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_NITER'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_COAL'].Index, 40)
 		end
 		SpawnUnit_AntiCav(iPlayer, pPlot, currentEra)
 		SpawnUnit_Cavalry(iPlayer, pPlot, currentEra)
@@ -273,8 +276,11 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 5 then
 		--Modern
 		if bGatheringStormActive then
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 20)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 20)		
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 40)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_NITER'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_HORSES'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_COAL'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 40)
 		end
 		SpawnUnit_Siege(iPlayer, pPlot, currentEra)
 		SpawnUnit_Siege(iPlayer, pPlot, currentEra)
@@ -289,7 +295,9 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 6 then
 		--Atomic
 		if bGatheringStormActive then
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 20)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 20)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_COAL'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 60)
 			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_URANIUM'].Index, 10)		
 		end
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
@@ -305,9 +313,11 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 7 then
 		--Information
 		if bGatheringStormActive then
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 30)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_ALUMINUM'].Index, 10)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_URANIUM'].Index, 10)		
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 20)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_COAL'].Index, 40)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_ALUMINUM'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_URANIUM'].Index, 20)		
 		end
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
@@ -323,9 +333,11 @@ function EraSiegeUnits(iPlayer, pPlot, currentGameEra, settlersBonus)
 	if currentEra == 8 then
 		--Future
 		if bGatheringStormActive then
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 40)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_ALUMINUM'].Index, 10)
-			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_URANIUM'].Index, 10)		
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_IRON'].Index, 20)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_COAL'].Index, 20)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_OIL'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_ALUMINUM'].Index, 60)
+			playerResources:ChangeResourceAmount(GameInfo.Resources['RESOURCE_URANIUM'].Index, 60)			
 		end
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)
 		SpawnUnit_Melee(iPlayer, pPlot, currentEra)

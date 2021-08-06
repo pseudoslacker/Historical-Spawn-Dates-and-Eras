@@ -1,22 +1,27 @@
 ------------------------------------------------------------------------------
 --	FILE:	 InGameHSD.lua
 --  Gedemon (2017)
---	changelog (Gathering Storm):
---	(*)	added ExposedMembers context for UI
+--	totalslacker (2020-2021)
 ------------------------------------------------------------------------------
+
 include("ScriptHSD.lua");
+
 print ("loading InGameHSD.lua")
 
 ----------------------------------------------------------------------------------------
--- Historical Spawn Dates <<<<<
+-- User Interface and Gameplay Menu Settings
 ----------------------------------------------------------------------------------------
 
---totalslacker: added these to ExposedMembers for UI and Gameplay scripts to communicate after Gathering Storm update
+--Share context via ExposedMembers for UI and Gameplay scripts to communicate
 LuaEvents = ExposedMembers.LuaEvents
 
 local defaultQuickMovement 	= UserConfiguration.GetValue("QuickMovement")
 local defaultQuickCombat 	= UserConfiguration.GetValue("QuickCombat")
 local defaultAutoEndTurn	= UserConfiguration.GetValue("AutoEndTurn") 
+
+----------------------------------------------------------------------------------------
+-- Calendar Functions
+----------------------------------------------------------------------------------------
 
 function SetTurnYear(iTurn)
 	previousTurnYear 	= Calendar.GetTurnYearForGame( iTurn )
@@ -29,28 +34,28 @@ function SetTurnYear(iTurn)
 	LuaEvents.SetCurrentTurnYear(currentTurnYear)
 	LuaEvents.SetNextTurnYear(nextTurnYear)
 end
-Events.TurnEnd.Add( SetTurnYear )
 
 function SetAutoValues()
 	--UserConfiguration.SetValue("QuickMovement", 1)
 	--UserConfiguration.SetValue("QuickCombat", 1)
 	UserConfiguration.SetValue("AutoEndTurn", 1)
 end
-LuaEvents.SetAutoValues.Add(SetAutoValues)
 
 function RestoreAutoValues()
 	--UserConfiguration.SetValue("QuickMovement", defaultQuickMovement)
 	--UserConfiguration.SetValue("QuickCombat", 	defaultQuickCombat 	)
 	UserConfiguration.SetValue("AutoEndTurn", 	defaultAutoEndTurn	)
 end
-LuaEvents.RestoreAutoValues.Add(RestoreAutoValues)
 
 function SetStartingEra(iPlayer, era)
 	local key = "StartingEra"..tostring(iPlayer)
 	print ("saving key = "..key..", value = ".. tostring(era))
 	GameConfiguration.SetValue(key, era)
 end
-LuaEvents.SetStartingEra.Add( SetStartingEra )
+
+----------------------------------------------------------------------------------------
+-- Support Functions for City Conversion and Revolts
+----------------------------------------------------------------------------------------
 
 function CheckCityGovernor(pPlayerID, pCityID)
 	local pPlayer = Players[pPlayerID]
@@ -71,7 +76,6 @@ function CheckCityGovernor(pPlayerID, pCityID)
 		return false
 	end
 end
-ExposedMembers.CheckCity.CheckCityGovernor = CheckCityGovernor
 
 function CheckCityCapital(pPlayerID, pCityID)
 	local bCapital = false
@@ -102,7 +106,6 @@ function CheckCityCapital(pPlayerID, pCityID)
 	end
 	return bCapital
 end
-ExposedMembers.CheckCityCapital = CheckCityCapital
 
 function CheckCityOriginalCapital(pPlayerID, pCityID)
 	local pPlayer = Players[pPlayerID]
@@ -139,7 +142,6 @@ function CheckCityOriginalCapital(pPlayerID, pCityID)
 	end
 	return bOriginalCapital
 end
-ExposedMembers.CheckCityOriginalCapital = CheckCityOriginalCapital
 
 -- all credit for the code below goes to Tiramasu, taken from the Free City States mod
 function GetPlayerCityUIDatas(pPlayerID, pCityID)
@@ -213,13 +215,31 @@ function GetPlayerCityUIDatas(pPlayerID, pCityID)
 	end	
 	return CityUIDataList
 end
-ExposedMembers.GetPlayerCityUIDatas = GetPlayerCityUIDatas
 
--- Set current & next turn year ASAP when (re)loading
-LuaEvents.SetCurrentTurnYear(Calendar.GetTurnYearForGame(Game.GetCurrentGameTurn()))
-LuaEvents.SetNextTurnYear(Calendar.GetTurnYearForGame(Game.GetCurrentGameTurn()+1))
+----------------------------------------------------------------------------------------
+-- Initialize all functions and link to the the necessary in-game event hooks
+----------------------------------------------------------------------------------------
 
--- Broacast that we're ready to set HSD
-LuaEvents.InitializeHSD()
+function InitializeHSD_UI()
+	-- Update calendar functions from UI for gameplay scripts
+	Events.TurnEnd.Add( SetTurnYear )
+	LuaEvents.SetAutoValues.Add(SetAutoValues)
+	LuaEvents.RestoreAutoValues.Add(RestoreAutoValues)
+	LuaEvents.SetStartingEra.Add( SetStartingEra )
+	-- Share UI context functions with gameplay scripts
+	ExposedMembers.CheckCity.CheckCityGovernor = CheckCityGovernor
+	ExposedMembers.CheckCityCapital = CheckCityCapital
+	ExposedMembers.CheckCityOriginalCapital = CheckCityOriginalCapital
+	ExposedMembers.GetPlayerCityUIDatas = GetPlayerCityUIDatas
+	-- Set current & next turn year ASAP when (re)loading
+	LuaEvents.SetCurrentTurnYear(Calendar.GetTurnYearForGame(Game.GetCurrentGameTurn()))
+	LuaEvents.SetNextTurnYear(Calendar.GetTurnYearForGame(Game.GetCurrentGameTurn()+1))	
+	-- Broacast that we're ready to set HSD
+	LuaEvents.InitializeHSD()
+end
 
+InitializeHSD_UI();
 
+----------------------------------------------------------------------------------------
+-- END
+----------------------------------------------------------------------------------------
