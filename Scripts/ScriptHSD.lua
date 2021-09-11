@@ -81,8 +81,10 @@ local bLiteMode					= MapConfiguration.GetValue("LiteMode")
 local iLegacySpawnDates			= MapConfiguration.GetValue("OldWorldStart")
 local bRagingBarbarians			= MapConfiguration.GetValue("RagingBarbarians") or false
 local bConvertCities			= MapConfiguration.GetValue("ConvertCities") or false 
--- local bConvertSpawnZone			= MapConfiguration.GetValue("ConvertSpawnZones") or false
-local bConvertSpawnZone			= false
+local iConvertSpawnZone			= MapConfiguration.GetValue("ConvertSpawnZones") or false
+local bPeacefulSpawns			= MapConfiguration.GetValue("PeacefulSpawns") or false
+local bRestrictSpawnZone		= MapConfiguration.GetValue("RestrictSpawnZone") or false
+local bUniqueSpawnZones			= MapConfiguration.GetValue("UniqueSpawnZones") or false
 local bOverrideSpawn			= false
 
 print("bHistoricalSpawnDates is "..tostring(bHistoricalSpawnDates))
@@ -101,7 +103,7 @@ print("bSpawnRange is "..tostring(bSpawnRange))
 print("bGoldenAgeSpawn is "..tostring(bGoldenAgeSpawn))
 print("bSubtractEra is "..tostring(bSubtractEra))
 print("bConvertCities is "..tostring(bConvertCities))
-print("bConvertSpawnZone is "..tostring(bConvertSpawnZone))
+print("iConvertSpawnZone is "..tostring(iConvertSpawnZone))
 print("bOverrideSpawn is "..tostring(bOverrideSpawn))
 
 -- ===========================================================================
@@ -167,9 +169,28 @@ local Notifications_revoltingCityPlots	= {}
 -- GameInfo indexes
 -- ===========================================================================
 
-local ms_TundraTerrainClass :number 	= GameInfo.TerrainClasses["TERRAIN_CLASS_TUNDRA"].Index
-local ms_SnowTerrainClass :number 		= GameInfo.TerrainClasses["TERRAIN_CLASS_SNOW"].Index
-local ms_IceFeatureType :number			= GameInfo.Features["FEATURE_ICE"].Index
+local ms_TundraTerrainClass :number 	= 4 --Default TerrainClass index for Tundra
+local ms_SnowTerrainClass :number 		= 5 --Default TerrainClass index for Snow
+local ms_IceFeatureType :number			= 1 --Default Features index for Ice
+
+--Add nil checks because indexing unknown tables is dangerous!
+if GameInfo.TerrainClasses["TERRAIN_CLASS_TUNDRA"] then
+	ms_TundraTerrainClass = GameInfo.TerrainClasses["TERRAIN_CLASS_TUNDRA"].Index
+else
+	print("Tundra TerrainClass is nil")
+end
+
+if GameInfo.TerrainClasses["TERRAIN_CLASS_SNOW"] then
+	ms_SnowTerrainClass	= GameInfo.TerrainClasses["TERRAIN_CLASS_SNOW"].Index
+else
+	print("Snow TerrainClass is nil")
+end
+
+if GameInfo.Features["FEATURE_ICE"] then
+	ms_IceFeatureType = GameInfo.Features["FEATURE_ICE"].Index
+else
+	print("Ice FeatureClass is nil")
+end
 
 local iGreatScientist 	= GameInfo.GreatPersonClasses["GREAT_PERSON_CLASS_SCIENTIST"].Index
 local iGreatWriter 		= GameInfo.GreatPersonClasses["GREAT_PERSON_CLASS_WRITER"].Index
@@ -691,6 +712,36 @@ for row in GameInfo.ColonizerCivs() do
 	end
 end
 
+-- Create list of players with restricted spawns who will only convert their capital
+print("Building list of restricted spawn Civs...")
+local restrictedSpawns = {}
+for row in GameInfo.RestrictedSpawns() do
+	if isInGame[row.Civilization] and bRestrictSpawnZone then
+		restrictedSpawns[row.Civilization] = true
+		print("restrictedSpawns = "..tostring(row.Civilization))
+	end
+end
+
+-- Create list of players with peaceful spawns who will not declare war
+print("Building list of peaceful spawn Civs...")
+local peacefulSpawns = {}
+for row in GameInfo.PeacefulSpawns() do
+	if isInGame[row.Civilization] and bPeacefulSpawns then
+		peacefulSpawns[row.Civilization] = true
+		print("peacefulSpawns = "..tostring(row.Civilization))
+	end
+end
+
+-- Create list of players with unique spawn zones
+print("Building list of Civs with unique spawn zones...")
+local uniqueSpawnZones = {}
+for row in GameInfo.UniqueSpawnZones() do
+	if isInGame[row.Civilization] and bUniqueSpawnZones then
+		uniqueSpawnZones[row.Civilization] = true
+		print("uniqueSpawnZones = "..tostring(row.Civilization))
+	end
+end
+
 -- Create list of captured capitals
 -- totalslacker: Not used for anything yet, needs to be called at the start of the game on load
 print("Building occupied capitals table...")
@@ -1043,6 +1094,122 @@ end
 -- Helper functions used in spawning the player
 -- ===========================================================================
 
+function FindSpawnPlotsByEra(startingPlot, iPlayer)
+	local booleanReturnValue = false
+	local permPlots = {}
+	local curPlots = {}
+	local nextPlots = {}
+	local revoltCityPlots = {}
+	local iShortestDistance = 0
+	if gameCurrentEra < 4 then
+		iShortestDistance = ((4 * (gameCurrentEra + 1)) / 2)
+	else
+		iShortestDistance = 6
+	end
+	-- print("Adding starting plot index to spawn zone table. Searching adjacent plots")
+	table.insert(permPlots, startingPlot:GetIndex())
+	for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+		local adjacentPlot = Map.GetAdjacentPlot(startingPlot:GetX(), startingPlot:GetY(), direction)
+		if adjacentPlot and not adjacentPlot:IsWater() and not adjacentPlot:IsImpassable() then
+			print("Adding index of adjacent plot "..tostring(adjacentPlot:GetX())..", "..tostring(adjacentPlot:GetY()).." to table")
+			table.insert(permPlots, adjacentPlot:GetIndex())
+			table.insert(curPlots, adjacentPlot:GetIndex())
+		end
+	end
+	print("curPlots = "..tostring(#curPlots))
+	local bAdjacentPlots = true
+	while (bAdjacentPlots) do
+		for j, iPlotIndex in ipairs(curPlots) do
+			local pPlot = Map.GetPlotByIndex(iPlotIndex)
+			for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+				local adjacentPlot = Map.GetAdjacentPlot(pPlot:GetX(), pPlot:GetY(), direction)
+				if adjacentPlot and not adjacentPlot:IsWater() and not adjacentPlot:IsImpassable() then
+					local bDuplicate = false
+					for j, iPlotIndex in ipairs(permPlots) do
+						if iPlotIndex == adjacentPlot:GetIndex() then
+							bDuplicate = true
+						end
+					end
+					if not bDuplicate then
+						local iDistance = Map.GetPlotDistance(startingPlot:GetX(), startingPlot:GetY(), adjacentPlot:GetX(), adjacentPlot:GetY())
+						if iDistance <= iShortestDistance then
+							print("Adding index of adjacent plot "..tostring(adjacentPlot:GetX())..", "..tostring(adjacentPlot:GetY()).." to table")
+							table.insert(permPlots, adjacentPlot:GetIndex())
+							table.insert(nextPlots, adjacentPlot:GetIndex())
+						end
+					end
+				end
+			end
+		end
+		curPlots = {}
+		print("curPlots = "..tostring(#curPlots))
+		print("nextPlots = "..tostring(#nextPlots))
+		print("permPlots = "..tostring(#permPlots))
+		for j, iPlotIndex in ipairs(nextPlots) do
+			local pPlot = Map.GetPlotByIndex(iPlotIndex)
+			for direction = 0, DirectionTypes.NUM_DIRECTION_TYPES - 1, 1 do
+				local adjacentPlot = Map.GetAdjacentPlot(pPlot:GetX(), pPlot:GetY(), direction)
+				if adjacentPlot and not adjacentPlot:IsWater() and not adjacentPlot:IsImpassable() then
+					local bDuplicate = false
+					for j, iPlotIndex in ipairs(permPlots) do
+						if iPlotIndex == adjacentPlot:GetIndex() then
+							bDuplicate = true
+						end
+					end
+					if not bDuplicate then
+						local iDistance = Map.GetPlotDistance(startingPlot:GetX(), startingPlot:GetY(), adjacentPlot:GetX(), adjacentPlot:GetY())
+						if iDistance <= iShortestDistance then
+							print("Adding index of adjacent plot "..tostring(adjacentPlot:GetX())..", "..tostring(adjacentPlot:GetY()).." to table")
+							table.insert(permPlots, adjacentPlot:GetIndex())
+							table.insert(curPlots, adjacentPlot:GetIndex())
+						end
+					end
+				end
+			end
+		end
+		nextPlots = {}
+		print("curPlots = "..tostring(#curPlots))
+		print("nextPlots = "..tostring(#nextPlots))
+		print("permPlots = "..tostring(#permPlots))
+		if ((#curPlots == 0) and (#nextPlots == 0)) then
+			print("No more adjacent plots in range")
+			bAdjacentPlots = false
+		elseif(#permPlots >= 127) then
+			print("The maximum number of plots in a 6 hex range have been added to the table! We should stop here.")
+			bAdjacentPlots = false
+		end
+	end
+	-- print("Iterating through list of spawn plots and gathering all cities into table")
+	for j, iPlotIndex in ipairs(permPlots) do
+		local pPlot = Map.GetPlotByIndex(iPlotIndex)
+		if pPlot then
+			local isCity = false
+			if pPlot:IsCity() ~= nil then isCity = pPlot:IsCity() end
+			if isCity then
+				local pCity = Cities.GetCityInPlot(pPlot)
+				if pCity and (pCity:GetOwner() ~= iPlayer) then
+					table.insert(revoltCityPlots, pPlot)
+					print("New city plot found")
+					print("Plot: "..tostring(pPlot:GetX())..", "..tostring(pPlot:GetY()))							
+				end
+			end	
+		end
+	end
+	-- print("Iterating through list of cities and converting")
+	if #revoltCityPlots > 0 then
+		for j, pPlot in ipairs(revoltCityPlots) do
+			local pCity = Cities.GetCityInPlot(pPlot)
+			if pCity and (pCity:GetOwner() ~= iPlayer) and (pCity:GetOwner() ~= Players[62]) then
+				local pPlayer = Players[pCity:GetOwner()]
+				if pPlayer:GetCities() and (pPlayer:GetCities():GetCount() > 1) then
+					booleanReturnValue = CityRebellion(pCity, iPlayer, pCity:GetOwner())
+				end
+			end
+		end
+	end
+	return booleanReturnValue
+end
+
 -- Used when converting nearby cities to free cities
 function FindClosestCityByEra(playerID :number, iStartX :number, iStartY :number)
     local pCity = false
@@ -1076,7 +1243,7 @@ function FindClosestCitiesByEra(playerID :number, iStartX :number, iStartY :numb
 	local pPlayer = Players[playerID]
 	local pFreeCities = Players[62]
 	local revoltCities = {}
-	if pPlayer:GetCities() and (pPlayer:GetCities():GetCount() > 1) and (pPlayer ~= pFreeCities) then
+	if pPlayer and pPlayer:GetCities() and (pPlayer:GetCities():GetCount() > 1) and (pPlayer ~= pFreeCities) then
 		local pPlayerCities:table = pPlayer:GetCities()
 		for i, pLoopCity in pPlayerCities:Members() do
 			local iDistance = Map.GetPlotDistance(iStartX, iStartY, pLoopCity:GetX(), pLoopCity:GetY())
@@ -1159,6 +1326,41 @@ function FindClosestCityToPlotXY(iStartX, iStartY)
 		print ("FindClosestCityToPlotXY() found no target city");
 	end
     return pCity;
+end
+
+function FindClosestCitiesToPlotXY(iStartX, iStartY)
+	local pCities = {}
+	local iShortestDistance = 10000;
+	-- print("Finding closest city distance...")
+	local aPlayers = PlayerManager.GetAlive()
+	for loop, pPlayer in ipairs(aPlayers) do
+		local pPlayerCities:table = pPlayer:GetCities()
+		for i, pLoopCity in pPlayerCities:Members() do
+			local iDistance = Map.GetPlotDistance(iStartX, iStartY, pLoopCity:GetX(), pLoopCity:GetY())
+			if iDistance and (iDistance < iShortestDistance) then
+				iShortestDistance = iDistance
+			end
+		end
+	end
+	-- print("Finding all cities at this distance...")
+	for loop, pPlayer in ipairs(aPlayers) do
+		local pPlayerCities:table = pPlayer:GetCities()
+		for i, pLoopCity in pPlayerCities:Members() do
+			local iDistance = Map.GetPlotDistance(iStartX, iStartY, pLoopCity:GetX(), pLoopCity:GetY())
+			if iDistance and (iDistance == iShortestDistance) then
+				table.insert(pCities, pLoopCity)
+			end
+		end
+	end
+	if (#pCities > 0) then
+		for i, pLoopCity in ipairs(pCities) do
+			print("FindClosestCitiesToPlotXY() found a target city")
+		end
+	else
+		print("FindClosestCitiesToPlotXY() found no target city")
+		pCities = false
+	end
+    return pCities
 end
 
 -- Used by invasion logic
@@ -1366,6 +1568,102 @@ function PlayerBuffer(startingPlot)
 	return selectedPlot
 end
 
+function GetUniqueSpawnZone(iPlayer, startingPlot)
+	-- print("Initializing variables...")
+	local pPlayer = Players[iPlayer]
+	local sCivTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
+	local continentPlotsIndexTable = {}
+	local revoltCityPlots = {}
+	local pContinentType = startingPlot:GetContinentType()
+	local continentTypeName = GameInfo.Continents[pContinentType].ContinentType
+	local maxY = ContinentDimensions[continentTypeName].maxY
+	local spanY = ContinentDimensions[continentTypeName].spanY
+	local lowerHalf = ContinentDimensions[continentTypeName].lowerHalf
+	local maxX = ContinentDimensions[continentTypeName].maxX
+	local spanX = ContinentDimensions[continentTypeName].spanX
+	local rightHalf = ContinentDimensions[continentTypeName].rightHalf
+	local baseX = ContinentDimensions[continentTypeName].baseX
+	-- print("Iterating through list of spawn conditions based on civilization...")
+	if (sCivTypeName == "CIVILIZATION_AUSTRALIA") then
+		print("Convert all cities on Australian continent")
+		--Iterate through list of continents in game to match to starting plot continent and gather plots
+		local tContinents = Map.GetContinentsInUse()
+		for i, iContinent in ipairs(tContinents) do
+			print("Starting continent is "..tostring(GameInfo.Continents[pContinentType].ContinentType)..", checking continent is "..tostring(GameInfo.Continents[iContinent].ContinentType))
+			if (GameInfo.Continents[iContinent].ContinentType == GameInfo.Continents[pContinentType].ContinentType) then
+				print("Starting continent matches")
+				continentPlotsIndexTable = Map.GetContinentPlots(iContinent)
+			end
+		end
+		--Iterate through list of continent plots and gather all cities into table
+		for j, iPlotIndex in ipairs(continentPlotsIndexTable) do
+			local pPlot = Map.GetPlotByIndex(iPlotIndex)
+			if pPlot then
+				local isCity = false
+				if pPlot:IsCity() ~= nil then isCity = pPlot:IsCity() end
+				if isCity then
+					local pCity = Cities.GetCityInPlot(pPlot)
+					if pCity and (pCity:GetOwner() ~= iPlayer) then
+						table.insert(revoltCityPlots, pPlot)
+						print("New city plot found")
+						print("Plot: "..tostring(pPlot:GetX())..", "..tostring(pPlot:GetY()))							
+					end
+				end	
+			end
+		end
+		--Iterate through list of cities and convert
+		if #revoltCityPlots > 0 then
+			for j, pPlot in ipairs(revoltCityPlots) do
+				local pCity = Cities.GetCityInPlot(pPlot)
+				if pCity then
+					CityRebellion(pCity, iPlayer, pCity:GetOwner())						
+				end
+			end
+		end
+	elseif(sCivTypeName == "CIVILIZATION_CANADA") then
+		print("Convert all cities north of Canada's start position and east of the continental divide")
+		--Iterate through list of continents in game to match to starting plot continent and gather plots
+		local tContinents = Map.GetContinentsInUse()
+		for i, iContinent in ipairs(tContinents) do
+			print("Starting continent is "..tostring(GameInfo.Continents[pContinentType].ContinentType)..", checking continent is "..tostring(GameInfo.Continents[iContinent].ContinentType))
+			if (GameInfo.Continents[iContinent].ContinentType == GameInfo.Continents[pContinentType].ContinentType) then
+				print("Starting continent matches")
+				continentPlotsIndexTable = Map.GetContinentPlots(iContinent)
+			end
+		end
+		--Iterate through list of continent plots and gather all cities into table (Canada's spawn zone includes all cities north of the starting plot and east of the continental divide)
+		for j, iPlotIndex in ipairs(continentPlotsIndexTable) do
+			local pPlot = Map.GetPlotByIndex(iPlotIndex)
+			if pPlot then
+				local isCity = false
+				if pPlot:IsCity() ~= nil then isCity = pPlot:IsCity() end
+				if isCity then
+					if (pPlot:GetY() >= startingPlot:GetY()) and (((pPlot:GetX() > rightHalf) and (baseX < rightHalf)) or ((baseX > rightHalf) and ((pPlot:GetX() > rightHalf) and (pPlot:GetX() < baseX)))) then
+						local pCity = Cities.GetCityInPlot(pPlot)
+						if pCity and (pCity:GetOwner() ~= iPlayer) then
+							table.insert(revoltCityPlots, pPlot)
+							print("New city plot found")
+							print("Plot: "..tostring(pPlot:GetX())..", "..tostring(pPlot:GetY()))							
+						end
+					end
+				end	
+			end
+		end
+		--Iterate through list of cities and convert (do not convert Cree cities)
+		if #revoltCityPlots > 0 then
+			for j, pPlot in ipairs(revoltCityPlots) do
+				local pCity = Cities.GetCityInPlot(pPlot)
+				if pCity and (PlayerConfigurations[pCity:GetOwner()]:GetCivilizationTypeName() ~= "CIVILIZATION_CREE") then
+					CityRebellion(pCity, iPlayer, pCity:GetOwner())						
+				end
+			end
+		end
+	else
+		print("This player does not have a unique spawn function! Reverting to default spawn function")
+		FreeCityRevolt(iPlayer, startingPlot)
+	end
+end
+
 --Currently unused
 function FindClosestStartingPlotByContinent(startingPlot)	
 	local selectedPlot = startingPlot
@@ -1545,18 +1843,19 @@ function OnPlayerEraChanged(PlayerID, iNewEraID)
 			Notification_NewColony(PlayerID, colonyPlot)
 			print("Spawned a Modern era colony for "..tostring(sCivTypeName))
 		else
-			print("Failed to spawn a new colony")
+			print("Failed to spawn a new colony for "..tostring(sCivTypeName))
 		end
 	end
 end
 
 -- ===========================================================================
--- Main functions, these control all of the logic for player spawns
+-- Main functions for player spawns
 -- ===========================================================================
 
 function CityRebellion(pCity, playerID, otherPlayerID)
 	local bRevolt = false
 	local pPlayer = Players[playerID]
+	local sCivTypeName = PlayerConfigurations[playerID]:GetCivilizationTypeName()
 	if pCity and pPlayer and Players[otherPlayerID] then
 		print("Calling CityRebellion()")
 		local pCityID = pCity:GetID()
@@ -1607,24 +1906,26 @@ function CityRebellion(pCity, playerID, otherPlayerID)
 				local pDiplomacy = pPlayer:GetDiplomacy()
 				local iWar = WarTypes.FORMAL_WAR
 				pDiplomacy:SetHasMet(otherPlayerID)
-				local bCanWar = pDiplomacy:CanDeclareWarOn(otherPlayerID)
-				if bCanWar then 
-					pDiplomacy:DeclareWarOn(otherPlayerID, iWar, true) 
-					print("War declared successfully")
-					bRevolt = true
-				end	
+				if not peacefulSpawns[sCivTypeName] then
+					local bCanWar = pDiplomacy:CanDeclareWarOn(otherPlayerID)
+					if bCanWar then 
+						pDiplomacy:DeclareWarOn(otherPlayerID, iWar, true) 
+						print("War declared successfully")
+					end	
+				end
 			end
 		else
 			print("City could not be converted to free cities. Declaring war on city owner")
 			local pDiplomacy = pPlayer:GetDiplomacy()
 			local iWar = WarTypes.FORMAL_WAR
 			pDiplomacy:SetHasMet(otherPlayerID)
-			local bCanWar = pDiplomacy:CanDeclareWarOn(otherPlayerID)
-			if bCanWar then 
-				pDiplomacy:DeclareWarOn(otherPlayerID, iWar, true) 
-				print("War declared successfully")
-				bRevolt = true
-			end	
+			if not peacefulSpawns[sCivTypeName] then
+				local bCanWar = pDiplomacy:CanDeclareWarOn(otherPlayerID)
+				if bCanWar then 
+					pDiplomacy:DeclareWarOn(otherPlayerID, iWar, true) 
+					print("War declared successfully")
+				end	
+			end
 		end
 	end	
 	return bRevolt
@@ -1632,48 +1933,58 @@ end
 
 function FreeCityRevolt(playerID, startingPlot)
 	local bRevolt = false
-	-- local aPlayers = PlayerManager.GetAlive();
-	-- for loop, pPlayer in ipairs(aPlayers) do
-		-- local iPlayer = pPlayer:GetID()
-		-- if bConvertSpawnZone then
-			-- -- print("All cities in nearby plots will revolt")
-			-- local pCities = FindClosestCitiesByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
-			-- if pCities then
-				-- for i, pCity in ipairs(pCities) do
-					-- if pCity then
-						-- bRevolt = CityRebellion(pCity, playerID, iPlayer)
-					-- end
-				-- end
-			-- end
-			-- -- local pCities = FreeCitiesRevoltArea(playerID, startingPlot)
-		-- else
-			-- -- print("The nearest city per player will revolt")
-			-- local pCity = FindClosestCityByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
-			-- if pCity then
-				-- bRevolt = CityRebellion(pCity, playerID, iPlayer)
-			-- end
-		-- end
-	-- end
-	if not bConvertSpawnZone then
+	if (iConvertSpawnZone == 0) then
+		print("iConvertSpawnZone is "..tostring(iConvertSpawnZone)..". One city per player in the spawn zone will revolt!")
 		local aPlayers = PlayerManager.GetAlive();
 		for loop, pPlayer in ipairs(aPlayers) do
 			local iPlayer = pPlayer:GetID()
 			if iPlayer == playerID then
 				-- print("Don't convert your own cities!")
 			else
-				-- print("The nearest city per player will revolt")
 				local pCity = FindClosestCityByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
 				if pCity then
 					bRevolt = CityRebellion(pCity, playerID, iPlayer)
 				end
 			end
 		end
+	elseif(iConvertSpawnZone == 1) then
+		print("iConvertSpawnZone is "..tostring(iConvertSpawnZone)..". All cities in the spawn zone not separated by mountains or sea will revolt!")
+		bRevolt = FindSpawnPlotsByEra(startingPlot, playerID)
+	elseif(iConvertSpawnZone == 2) then
+		print("iConvertSpawnZone is "..tostring(iConvertSpawnZone)..". All cities in the spawn zone will revolt!")
+		local aPlayers = PlayerManager.GetAlive();
+		for loop, pPlayer in ipairs(aPlayers) do
+			local iPlayer = pPlayer:GetID()
+			if iPlayer == playerID then
+				-- print("Don't convert your own cities!")
+			else
+				local pPlayerCities = FindClosestCitiesByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
+				if pPlayerCities and (#pPlayerCities > 0) then
+					for loop, pCity in ipairs(pPlayerCities) do
+						bRevolt = CityRebellion(pCity, playerID, iPlayer)
+					end
+				end
+			end
+		end
 	else
-		bRevolt = FreeCitiesRevoltArea(playerID, startingPlot)
+		print("iConvertSpawnZone was false. One city per player in the spawn zone will revolt!")
+		local aPlayers = PlayerManager.GetAlive();
+		for loop, pPlayer in ipairs(aPlayers) do
+			local iPlayer = pPlayer:GetID()
+			if iPlayer == playerID then
+				-- print("Don't convert your own cities!")
+			else
+				local pCity = FindClosestCityByEra(iPlayer, startingPlot:GetX(), startingPlot:GetY())
+				if pCity then
+					bRevolt = CityRebellion(pCity, playerID, iPlayer)
+				end
+			end
+		end
 	end
 	return bRevolt
 end	
 
+--Unused
 function FreeCitiesRevoltArea(playerID, startingPlot)
 	local bRevolt = false
 	local revoltCityPlots = {}
@@ -1724,6 +2035,7 @@ end
 function DirectCityConversion(iPlayer, pPlot)
 	local bConvertedCity = false
 	local pPlayer = Players[iPlayer]
+	local sCivTypeName = PlayerConfigurations[iPlayer]:GetCivilizationTypeName()
 	if pPlayer and pPlayer:IsMajor() and pPlot and pPlot:IsCity() then
 		local pCity = Cities.GetCityInPlot(pPlot)
 		local pCityOwnerID = pCity:GetOwner()
@@ -1732,10 +2044,13 @@ function DirectCityConversion(iPlayer, pPlot)
 		pDiplomacy:SetHasMet(pCityOwnerID)					
 		local convertedCity = ConvertCapital(iPlayer, pPlot, pCityOwnerID, pCity)
 		if convertedCity then
-			local bCanWar = pDiplomacy:CanDeclareWarOn(pCityOwnerID)
-			if bCanWar then 
-				pDiplomacy:DeclareWarOn(pCityOwnerID, iWar, true) 
-			end	
+			if not peacefulSpawns[sCivTypeName] then
+				local bCanWar = pDiplomacy:CanDeclareWarOn(pCityOwnerID)
+				if bCanWar then 
+					pDiplomacy:DeclareWarOn(pCityOwnerID, iWar, true) 
+					print("War declared successfully")
+				end	
+			end
 			bConvertedCity = true	
 		end
 	end	
@@ -1859,6 +2174,7 @@ function MoveStartingPlotUnits(plotUnits, startingPlot)
 end
 
 function SpawnMajorPlayer(iPlayer, startingPlot, newStartingPlot)
+	--Set variables
 	local pPlayer = Players[iPlayer]
 	local pPlotOwnerID = startingPlot:GetOwner()
 	local iOtherPlayerCities = 0
@@ -1872,6 +2188,7 @@ function SpawnMajorPlayer(iPlayer, startingPlot, newStartingPlot)
 	end
 	local bOwnerIsPlayer = false
 	if pPlotOwnerID == iPlayer then bOwnerIsPlayer = true end
+	--Try to convert the first city, or look for a plot nearby if not possible, or just spawn starting units after turn 10 if no city to convert
 	if bConvertCities and startingPlot:IsCity() and not bOwnerIsPlayer and (iOtherPlayerCities > 1) then
 		local convertedCity = DirectCityConversion(iPlayer, startingPlot)
 		if convertedCity then
@@ -1926,11 +2243,30 @@ function SpawnMajorPlayer(iPlayer, startingPlot, newStartingPlot)
 			EraSiegeUnits(iPlayer, startingPlot, gameCurrentEra, settlersBonus)
 		end
 	end
-	if bSpawnRange and newStartingPlot then 
-		FreeCityRevolt(iPlayer, newStartingPlot)
-	else
-		FreeCityRevolt(iPlayer, startingPlot)
+	--Check for restricted spawn where Civ will only convert capital
+	local bRestrictedSpawn = false
+	if restrictedSpawns[sCivTypeName] then 
+		bRestrictedSpawn = true 
 	end
+	--Check for unique spawn zones using defined spawn conditions
+	local bUniqueSpawnZone = false
+	if uniqueSpawnZones[sCivTypeName] then 
+		bUniqueSpawnZone = true 
+	end
+	--Convert surrounding cities
+	if bRestrictedSpawn then
+		print("This player is in the restricted spawns list. Surrounding cities will NOT be converted.")
+	elseif(bUniqueSpawnZone) then
+		print("This player has a unique spawn zone.")
+		GetUniqueSpawnZone(iPlayer, startingPlot)
+	else
+		if bSpawnRange and newStartingPlot then 
+			FreeCityRevolt(iPlayer, newStartingPlot)
+		else
+			FreeCityRevolt(iPlayer, startingPlot)
+		end
+	end
+	--AI invasions
 	if not pPlayer:IsHuman() then
 		if newStartingPlot then
 			InitiateInvasions(iPlayer, newStartingPlot)
@@ -2072,12 +2408,20 @@ function SpawnStartingCity(iPlayer, startingPlot)
 				elseif(player:GetCities():GetCount() < 1) then
 					print("iShortestDistance is "..tostring(iShortestDistance))
 					if iShortestDistance == 3 then
-						local pCityInRange = FindClosestCityToPlotXY(startingPlot:GetX(), startingPlot:GetY())
-						-- local pCityInRange = false
-						if pCityInRange then
-							local pCityPlot = Map.GetPlotXY(pCityInRange:GetX(), pCityInRange:GetY())
-							-- print("pCityPlot AreaID is "..tostring(pCityPlot:GetAreaID())..". startingPlot AreaID is "..tostring(startingPlot:GetAreaID()))
-							if pCityPlot and not player:IsHuman() then
+						local bDifferentAreaIDs = true
+						local pCitiesInRange = FindClosestCitiesToPlotXY(startingPlot:GetX(), startingPlot:GetY())
+						if pCitiesInRange then
+							for i, pCity in ipairs(pCitiesInRange) do
+								local pCityPlot = Map.GetPlotXY(pCity:GetX(), pCity:GetY())
+								print("pCityPlot AreaID is "..tostring(pCityPlot:GetAreaID())..". startingPlot AreaID is "..tostring(startingPlot:GetAreaID()))
+								if pCityPlot and (pCityPlot:GetAreaID() ~= startingPlot:GetAreaID()) then
+									print("AreaIDs are different. Starting plot or other city is located on an island.")
+								else
+									bDifferentAreaIDs = false
+									print("AreaIDs are the same. Cities are too close.")
+								end
+							end
+							if bDifferentAreaIDs then
 								local city = player:GetCities():Create(startingPlot:GetX(), startingPlot:GetY())
 								if (player:GetCities():GetCount() < 1) then
 									print("Failed to spawn starting city. Spawning settler instead.")
@@ -2092,6 +2436,7 @@ function SpawnStartingCity(iPlayer, startingPlot)
 							UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_SETTLER", startingPlot:GetX(), startingPlot:GetY())						
 						end
 					else
+						--Distance must be 2 or less
 						print("City within 3 plots of starting plot. Spawning starting settler in adjacent hex.")
 						UnitManager.InitUnitValidAdjacentHex(iPlayer, "UNIT_SETTLER", startingPlot:GetX(), startingPlot:GetY())
 					end
@@ -2907,6 +3252,7 @@ end
 
 -- Initialize
 function OnLoadScreenClosed()
+	GetContinentDimensions()
 	GameEvents.OnGameTurnStarted.Add(SetCurrentGameEra)
 	GameEvents.PlayerTurnStarted.Add(SpawnPlayer)
 	if bApplyBalance then
@@ -2920,7 +3266,6 @@ function OnLoadScreenClosed()
 		Events.PlayerEraChanged.Add(OnPlayerEraChanged)
 	end
 	if bRagingBarbarians then
-		GetContinentDimensions()
 		Events.ImprovementAddedToMap.Add(SpawnBarbarians)
 		-- Events.UnitAddedToMap.Add(RemoveBarbScouts)
 	end

@@ -30,3 +30,12 @@ CREATE TABLE IF NOT EXISTS EraBuildingCivs
 	 
 CREATE TABLE IF NOT EXISTS ColonizerCivs
 	 (	Civilization TEXT NOT NULL UNIQUE);
+	 
+CREATE TABLE IF NOT EXISTS RestrictedSpawns
+	 (	Civilization TEXT NOT NULL UNIQUE);
+	 
+CREATE TABLE IF NOT EXISTS PeacefulSpawns
+	 (	Civilization TEXT NOT NULL UNIQUE);
+	 
+CREATE TABLE IF NOT EXISTS UniqueSpawnZones
+	 (	Civilization TEXT NOT NULL UNIQUE);

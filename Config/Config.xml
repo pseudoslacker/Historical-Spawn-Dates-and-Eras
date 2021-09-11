@@ -33,9 +33,15 @@
 		<!-- SPAWN OPTIONS -->
 		<Row ParameterId="ConvertCities" Name="LOC_MAP_CONVERT_CITIES" Description="LOC_MAP_CONVERT_CITIES_DESC" Domain="bool" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="ConvertCities" GroupId="AdvancedOptions" Visible="1" SortIndex="331"/>
 		
-		<Row ParameterId="ConvertSpawnZones" Name="LOC_MAP_CONVERT_SPAWN_ZONES" Description="LOC_MAP_CONVERT_SPAWN_ZONES_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="ConvertSpawnZones" GroupId="AdvancedOptions" Visible="0" SortIndex="331"/>
+		<Row ParameterId="ConvertSpawnZones" Name="LOC_MAP_CONVERT_SPAWN_ZONES" Description="LOC_MAP_CONVERT_SPAWN_ZONES_DESC" Domain="SpawnZoneOptions" DefaultValue="1" ConfigurationGroup="Map" ConfigurationId="ConvertSpawnZones" GroupId="AdvancedOptions" Visible="1" SortIndex="331"/>
 		
 		<Row ParameterId="SpawnRange" Name="LOC_MAP_SPAWN_RANGE" Description="LOC_MAP_SPAWN_RANGE_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="SpawnRange" GroupId="AdvancedOptions" Visible="1" SortIndex="332"/>
+		
+		<Row ParameterId="PeacefulSpawns" Name="LOC_MAP_PEACEFUL_SPAWN" Description="LOC_MAP_PEACEFUL_SPAWN_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="PeacefulSpawns" GroupId="AdvancedOptions" Visible="1" SortIndex="332"/>
+		
+		<Row ParameterId="RestrictSpawnZone" Name="LOC_MAP_RESTRICT_SPAWN" Description="LOC_MAP_RESTRICT_SPAWN_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="RestrictSpawnZone" GroupId="AdvancedOptions" Visible="1" SortIndex="332"/>
+		
+		<Row ParameterId="UniqueSpawnZones" Name="LOC_MAP_UNIQUE_SPAWN" Description="LOC_MAP_UNIQUE_SPAWN_DESC" Domain="bool" DefaultValue="0" ConfigurationGroup="Map" ConfigurationId="UniqueSpawnZones" GroupId="AdvancedOptions" Visible="1" SortIndex="332"/>
 		
 		<Row ParameterId="SpawnRangeSlider" Name="LOC_MAP_SPAWN_RANGE_SLIDER" Description="LOC_MAP_SPAWN_RANGE_SLIDER_DESC" Domain="SpawnRangeSlider" DefaultValue="10" ConfigurationGroup="Map" ConfigurationId="SpawnRangeSlider" GroupId="AdvancedOptions" Visible="1" SortIndex="333"/>
 		
@@ -71,6 +77,10 @@
 		<!-- New Spawn Tables -->
 		<Replace Domain="SpawnDateTables" Value="0" 	Name="LOC_HSD_STANDARD_NAME" 	Description="LOC_HSD_STANDARD_DESC" 	SortIndex="10"/>
 		<Replace Domain="SpawnDateTables" Value="1" 	Name="LOC_HSD_TRUE_START_NAME" 	Description="LOC_HSD_TRUE_START_DESC" 	SortIndex="20"/>
+		<!-- Spawn Zone Options -->
+		<Replace Domain="SpawnZoneOptions" Value="0" 	Name="LOC_SPAWNZONE_CLASSIC_NAME" 	Description="LOC_SPAWNZONE_CLASSIC_DESC" 	SortIndex="10"/>
+		<Replace Domain="SpawnZoneOptions" Value="1" 	Name="LOC_SPAWNZONE_ITERATIVE_NAME" 	Description="LOC_SPAWNZONE_ITERATIVE_DESC" 	SortIndex="20"/>
+		<Replace Domain="SpawnZoneOptions" Value="2" 	Name="LOC_SPAWNZONE_ALL_NAME" 	Description="LOC_SPAWNZONE_ALL_DESC" 	SortIndex="30"/>
 	</DomainValues>	
 	<DomainRanges>
 		<Replace Domain="SpawnRangeSlider" 		MinimumValue="2" MaximumValue="20" />
@@ -104,11 +114,13 @@
 		<Row ParameterId="ConvertCities" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
-		<Row ParameterId="ConvertSpawnZones" ConfigurationGroup="Map" ConfigurationId="ConvertCities" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="Comandantes" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="Comandantes" ConfigurationGroup="Map" ConfigurationId="BalanceHSD" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="ComandantesSlider" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="RagingBarbarians" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="PeacefulSpawns" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="RestrictSpawnZone" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
+		<Row ParameterId="UniqueSpawnZones" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
 		<!-- New Spawn Tables -->
 		<Row ParameterId="SpawnDateTables" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>
 		<Row ParameterId="LiteMode" ConfigurationGroup="Map" ConfigurationId="HistoricalSpawnDates" Operator="Equals" ConfigurationValue="1"/>

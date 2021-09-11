@@ -92,10 +92,28 @@
       <Text>Cities in the spawn zone for a new player will be directly converted to that player. Always converts the capital if the starting plot is owned by another player. Surrounding cities are converted under the following conditions -- [COLOR_Civ6Red]not an original capital, not the owner's last city, and does not contain an established Governor.[ENDCOLOR][NEWLINE][NEWLINE][COLOR_Civ6Blue]When this option is disabled, cities in the spawn zone will convert to the Free Cities faction according to the same conditions, but not directly to the new player.[ENDCOLOR]</Text>
     </Replace>
 	<Replace Tag="LOC_MAP_CONVERT_SPAWN_ZONES" Language="en_US">
-      <Text>Convert More Cities</Text>
+      <Text>Spawn Zone Type</Text>
     </Replace>	
 	<Replace Tag="LOC_MAP_CONVERT_SPAWN_ZONES_DESC" Language="en_US">
-      <Text>Attempts to convert all cities within the spawn range. Skips the governor check.</Text>
+      <Text>Choose a type of spawn zone. This will determine which cities are included in the spawn zone. Use the Convert Cities option above to change what happens to cities in the spawn zone.</Text>
+    </Replace>
+	<Replace Tag="LOC_SPAWNZONE_CLASSIC_NAME" Language="en_US">
+      <Text>Classic</Text>
+    </Replace>	
+	<Replace Tag="LOC_SPAWNZONE_CLASSIC_DESC" Language="en_US">
+      <Text>Try to convert one city per player within the spawn zone (excluding the capital). The entire spawn zone is scanned for possible cities, and obstacles are ignored.</Text>
+    </Replace>
+	<Replace Tag="LOC_SPAWNZONE_ITERATIVE_NAME" Language="en_US">
+      <Text>Iterative</Text>
+    </Replace>	
+	<Replace Tag="LOC_SPAWNZONE_ITERATIVE_DESC" Language="en_US">
+      <Text>Try to convert every city within the spawn zone that is not separated by mountains or water. The city plot must have a reachable path entirely within the spawn zone to be converted.</Text>
+    </Replace>
+	<Replace Tag="LOC_SPAWNZONE_ALL_NAME" Language="en_US">
+      <Text>All Cities</Text>
+    </Replace>	
+	<Replace Tag="LOC_SPAWNZONE_ALL_DESC" Language="en_US">
+      <Text>Try to convert every city within the spawn zone. Obstacles are ignored.</Text>
     </Replace>
 	<Replace Tag="LOC_MAP_LOYAL_HARBORS" Language="en_US">
       <Text>Loyal Harbors</Text>
@@ -142,6 +160,24 @@
     </Replace>
 	<Replace Tag="LOC_MAP_RAGING_BARBARIANS_DESC" Language="en_US">
       <Text>Geographically dependant barbarian camps with unique units linked to the continent.[NEWLINE][NEWLINE][COLOR_Civ6Red]Requires all DLC and Expansions![ENDCOLOR]</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_PEACEFUL_SPAWN" Language="en_US">
+      <Text>Peaceful Spawns</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_PEACEFUL_SPAWN_DESC" Language="en_US">
+      <Text>Activate the PeacefulSpawns list. Players in this list will not declare war when spawning.[NEWLINE][NEWLINE][COLOR_Civ6Blue]Define the players in this list from the file IsolatedCivs.sql[ENDCOLOR]</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_RESTRICT_SPAWN" Language="en_US">
+      <Text>One-City Spawns</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_RESTRICT_SPAWN_DESC" Language="en_US">
+      <Text>Activate the RestrictedSpawns list. Players in this list will only try to convert their capital city when spawning.[NEWLINE][NEWLINE][COLOR_Civ6Blue]Define the players in this list from the file IsolatedCivs.sql[ENDCOLOR]</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_UNIQUE_SPAWN" Language="en_US">
+      <Text>Unique Spawn Zones</Text>
+    </Replace>
+	<Replace Tag="LOC_MAP_UNIQUE_SPAWN_DESC" Language="en_US">
+      <Text>Activate the UniqueSpawnZones list. Players in this list will use scripted spawn zone conditions.[NEWLINE][NEWLINE][COLOR_Civ6Blue]Define the players in this list from the file IsolatedCivs.sql. Define the conditions for a unique spawn zone in ScriptHSD.lua in function GetUniqueSpawnZone()[ENDCOLOR]</Text>
     </Replace>
 	<!-- Headers and Footers -->
 	<Replace Tag="LOC_MAP_HSD_HEADER_MAIN_NAME" Language="en_US">

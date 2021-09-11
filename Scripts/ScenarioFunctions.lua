@@ -68,7 +68,7 @@ local MaliBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_MALI"]
 local EastAsianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_EASTASIAN"]
 local SiberianBarbarianTribe = GameInfo.BarbarianTribes["TRIBE_SIBERIAN"]
 
-local ContinentDimensions = {}
+ContinentDimensions = {} --Global variable
 
 function GetContinentDimensions()
 	print("Gathering continent dimensions...")
@@ -1214,6 +1214,7 @@ function InitiateColonization_GetPlotsByFeature(coastalPlots, featureIndex)
 	end
 	if #colonyPlots == 0 then
 		print("InitiateColonization_GetPlotsByFeature found no plots by feature")
+		colonyPlots = false
 	end
 	return colonyPlots
 end
@@ -1740,6 +1741,9 @@ function InitiateColonization_FirstWave(PlayerID, sCivTypeName)
 				local coastalPlots = Map.GetContinentPlots(iContinent)
 				if GameInfo.Features["FEATURE_CHOCOLATEHILLS"] then
 					colonyPlots = InitiateColonization_GetPlotsByFeature(coastalPlots, GameInfo.Features["FEATURE_CHOCOLATEHILLS"].Index)
+					if colonyPlots == false then
+						colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+					end
 				else
 					colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
 				end
@@ -2177,10 +2181,12 @@ function InitiateColonization_SecondWave(PlayerID, sCivTypeName)
 				local coastalPlots = Map.GetContinentPlots(iContinent)
 				if GameInfo.Features["FEATURE_YOSEMITE"] then
 					colonyPlots = InitiateColonization_GetPlotsByFeature(coastalPlots, GameInfo.Features["FEATURE_YOSEMITE"].Index)
+					if colonyPlots == false then
+						colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
+					end
 				else
 					colonyPlots = InitiateColonization_GetCoastalPlots(coastalPlots)
 				end
-				
 				selectedPlot = InitiateColonization_BestColonyMostDistant(colonyPlots, startingPlot)
 				if selectedPlot then
 					local pCity = pPlayer:GetCities():Create(selectedPlot:GetX(), selectedPlot:GetY())

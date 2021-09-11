@@ -168,7 +168,7 @@ SELECT ('CIVILIZATION_CREE'), ('TRAIT_LEADER_ISOLATED')
 WHERE EXISTS (SELECT * FROM Civilizations WHERE CivilizationType =  'CIVILIZATION_CREE');
 
 -------------------------------------------------------------------------------
--- Colonizers
+-- Colonizers (Civs in this list will participate in Colonization mode)
 -------------------------------------------------------------------------------
 INSERT OR REPLACE INTO ColonizerCivs (Civilization) 
 VALUES
@@ -179,3 +179,27 @@ VALUES
 		('CIVILIZATION_PORTUGAL'),
 		('CIVILIZATION_SCOTLAND'),
 		('CIVILIZATION_SPAIN');
+		
+-------------------------------------------------------------------------------
+-- Restricted Spawn Range (Civs in this list will only flip their capital city, use for small Civs like Netherlands)
+-------------------------------------------------------------------------------
+INSERT OR REPLACE INTO RestrictedSpawns (Civilization) 
+VALUES
+		('CIVILIZATION_NETHERLANDS'),
+		('CIVILIZATION_PORTUGAL');
+		
+-------------------------------------------------------------------------------
+-- Peaceful Spawns (Civs in this list can convert cities but will never declare war)
+-------------------------------------------------------------------------------
+INSERT OR REPLACE INTO PeacefulSpawns (Civilization) 
+VALUES
+		('CIVILIZATION_AUSTRALIA'),
+		('CIVILIZATION_CANADA');
+		
+-------------------------------------------------------------------------------
+-- Unique Spawn Zones (Civs in this list must have a unique spawn zone defined in function GetUniqueSpawnZone)
+-------------------------------------------------------------------------------
+INSERT OR REPLACE INTO UniqueSpawnZones (Civilization) 
+VALUES
+		('CIVILIZATION_AUSTRALIA'),
+		('CIVILIZATION_CANADA');
